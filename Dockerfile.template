@@ -29,6 +29,7 @@ ENV INITSYSTEM on
 # Install NetData Monitoring
 RUN curl -Ss 'https://raw.githubusercontent.com/firehol/netdata-demo-site/master/install-required-packages.sh' >/tmp/kickstart.sh && bash /tmp/kickstart.sh -i netdata-all
 RUN git clone https://github.com/firehol/netdata.git --depth=1
+RUN rpl "19999" "80" netdata/netdata-installer.sh
 RUN cd netdata/ && bash netdata-installer.sh && cd ../
 
 # This will copy all files in our root to the working  directory in the container
