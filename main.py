@@ -11,7 +11,7 @@ try:
 except:
     log("Cannot find device in serial port or open a connection")
     if (os.getenv('rebootOnSerialFail', True)):
-        os.system("shutdown /r")  # Reboot the device if cannot connect to serial port - ie have a second attempt
+        os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
 
 ser.write(("LOOP 1" + "\n").encode('ascii'))
 print(ser.readline())
