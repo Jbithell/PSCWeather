@@ -13,6 +13,6 @@ except:
     if (os.getenv('rebootOnSerialFail', True)):
         os.system("shutdown /r")  # Reboot the device if cannot connect to serial port - ie have a second attempt
 
-ser.write("LOOP 1" + "\n")
+ser.write(("LOOP 1" + "\n").encode('ascii'))
 print(ser.readline())
 print(ser.name)
