@@ -17,7 +17,7 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
     git 
 
 RUN sudo easy_install3 pip
-RUN pip install -r pyserial
+RUN pip install pyserial
 
 # Set our working directory
 WORKDIR /usr/src/app
