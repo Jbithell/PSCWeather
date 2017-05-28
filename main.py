@@ -24,4 +24,5 @@ def sendcommand(command):
 
 sendcommand("\n")
 sendcommand("TEST \n")
+sendcommand("GETTIME \n")
 print("Program done")
