@@ -30,7 +30,8 @@ for i in range(5):
     print("Line " + str(i))
     response = ser.readline()
     print(response)
-    print(response[14:18])
+    for byte in response[14:18]:
+        print(byte)
     print("Now the rest")
     for item in response:
         print(item)
