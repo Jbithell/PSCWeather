@@ -26,11 +26,14 @@ print ("Sending " + str("LOOP 1 \n"))
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 print("Sent ")
 print(bytes(str("LOOP 1 \n"), 'utf8'))
-ser.readline() #Read this line but ignore it - it is just some info to tell you all is well
+print(ser.readline()) #Read this line but ignore it - it is just some info to tell you all is well
 response = ser.readline()
 print(response)
-for byte in response[15:18]:
-    print(byte)
+data = {}
+data["windspeed"] = response[14]
+data["wind10minaverage"] = response[15]
+data["winddirection"] = response[16]
+print(data)
 ser.readline() #Read this line but ignore it - it is boring data we don't want
 
 print("Program done")
