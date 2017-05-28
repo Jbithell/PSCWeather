@@ -47,11 +47,9 @@ def looprequest():
     response = b""
     for i in range(4):
         response = response + ser.readline()
-    print(response)
-    print(len(response))
-    
     data = {}
-    data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
+    #data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
+    data["temperature"] = response[13]  # In degrees F multiplied by 10
     data["windspeed"] = response[15] #In mph
     data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
     data["winddirection"] = response[17] #In degrees
