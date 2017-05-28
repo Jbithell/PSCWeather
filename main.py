@@ -45,6 +45,8 @@ def looprequest():
     data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
     data["winddirection"] = response[17] #In degrees
     ser.readline() #Read this line but ignore it - it is boring data we don't want
+    if data["windspeed"] == 0 and data["winddirection"] == 0: #This indicates it's struggling for data so ignore
+        return False
     return data
 
 
