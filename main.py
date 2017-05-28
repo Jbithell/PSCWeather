@@ -14,12 +14,13 @@ except Exception as e:
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
         os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
 
-ser.write(("\n").encode('ascii'))
-print(ser.readline())
+def sendcommand(command):
+    print ("Sending " + str(command))
+    ser.write(bytes(str(command)))
+    print("Sent " + bytes(str(command)))
+    print(ser.readline())
+    print("Command complete")
 
-print("Done listen for new line")
-ser.write(bytes(b"TEST \n"))
-print(ser.readline())
-
-
+sendcommand("\n")
+sendcommand("TEST \n")
 print("Program done")
