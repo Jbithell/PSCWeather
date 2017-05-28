@@ -49,6 +49,8 @@ def looprequest():
         response = response + ser.readline()
     data = {}
     try:
+        print(response[13])
+        print(response[14])
         #data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
         data["temperature"] = response[14]  # In degrees F multiplied by 10
         data["windspeed"] = response[15] #In mph
