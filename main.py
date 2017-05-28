@@ -24,6 +24,8 @@ def sendcommand(command):
         print("Line " + str(i))
         response = ser.readline()
         print(response)
+        for item in response:
+            print(item)
     print("Command complete")
 
 
