@@ -23,11 +23,11 @@ def sendcommand(command):
     for i in range(5):
         print("Line " + str(i))
         response = ser.readline()
-        print(str(response))
+        print(response.decode('utf-8'))
     print("Command complete")
+
 
 sendcommand("\n")
 sendcommand("TEST \n")
-sendcommand("GETTIME \n")
 sendcommand("LOOP 1 \n")
 print("Program done")
