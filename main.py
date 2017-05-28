@@ -45,7 +45,7 @@ def looprequest():
     log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
     response = ser.readline()
-    while len(response) < 50: #Rudimentary offset error handling
+    while len(response) == 99: #Rudimentary offset error handling
         response = ser.readline()
     data = {}
     data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
@@ -53,12 +53,18 @@ def looprequest():
     data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
     data["winddirection"] = response[17] #In degrees
     if data["windspeed"] == 0 and data["winddirection"] == 0: #This indicates it's struggling for data so ignore
+        log("[INFO] Ignoring data because of 0 wind direction and speed")
         return False
+    elif data["windspeed"] == 255 and data["winddirection"] == 255 and data["wind10minaverage"] == 255:
+        log("[INFO] Ignoring data because of 255 direction, speed and average")
+        return False #Ignore - it's normally an offset error
     return data
 
 
 while True:
-    print(looprequest())
+    data = looprequest()
+    if data:
+        print(data)
     time.sleep(30)
 
 log("[INFO] End of Program")
