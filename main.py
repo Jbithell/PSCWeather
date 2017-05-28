@@ -26,17 +26,10 @@ print ("Sending " + str("LOOP 1 \n"))
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 print("Sent ")
 print(bytes(str("LOOP 1 \n"), 'utf8'))
-for i in range(5):
-    print("Line " + str(i))
-    response = ser.readline()
-    print(response)
-    for byte in response[14:18]:
-        print(byte)
-    print("Now the rest")
-    for item in response:
-        print(item)
-print("Command complete")
-
-
+ser.readline()
+response = ser.readline()
+print(response)
+for byte in response[15:18]:
+    print(byte)
 
 print("Program done")
