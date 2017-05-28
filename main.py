@@ -26,14 +26,17 @@ ser.write(bytes(str("\n"), 'utf8'))
 if ser.readline() == b"\n":
     log("[ERROR] Error getting connection - trying again")
     ser.write(bytes(str("\n"), 'utf8'))
-    if ser.readline() == b"\n": #Retry
-        log("[ERROR] Error getting connection - rebooting if setting is set")
-        if (os.getenv('rebootOnSerialFail', "True") == "True"):
-            log("[INFO] Rebooting")
-            os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
-        else:
-            log("[INFO] Quitting")
-            #sys.exit()
+    if ser.readline() == b"\n":
+        log("[ERROR] Error getting connection - trying again one last time")
+        ser.write(bytes(str("\n"), 'utf8'))
+        if ser.readline() == b"\n": #Retry
+            log("[ERROR] Error getting connection - rebooting if setting is set")
+            if (os.getenv('rebootOnSerialFail', "True") == "True"):
+                log("[INFO] Rebooting")
+                os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
+            else:
+                log("[INFO] Quitting")
+                #sys.exit()
 ser.readline() #Read the /r character that follows but ignore it
 
 log("[INFO] Ready to start getting data")
@@ -41,8 +44,9 @@ log("[INFO] Ready to start getting data")
 def looprequest():
     log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
-    print(ser.readline())
     response = ser.readline()
+    while len(response) < 50: #Rudimentary offset error handling
+        response = ser.readline()
     data = {}
     data["temperature"] = response[13] #In degrees F multiplied by 10
     data["windspeed"] = response[15] #In mph
