@@ -1,5 +1,6 @@
 import os
 import serial
+import codecs #Decode the strings
 def log(message):
     print(message)
 
@@ -21,7 +22,8 @@ def sendcommand(command):
     print(bytes(str(command), 'utf8'))
     for i in range(5):
         print("Line " + str(i))
-        print(str(ser.readline().decode('cp1252'), "utf8"))
+        print(codecs.decode(ser.readline(), "hex"))
+        
     print("Command complete")
 
 sendcommand("\n")
