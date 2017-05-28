@@ -21,9 +21,9 @@ except Exception as e:
 print("Sending loop command")
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 print("Sent")
-ser.readline() #Read this line but ignore it - it is just some info to tell you all is well
-ser.readline() #Read this line but ignore it - it is just some info to tell you all is well
+print(ser.readline()) #Read this line but ignore it - it is just some info to tell you all is well
 response = ser.readline()
+print(response)
 data = {}
 data["humidity"] = response[34] #As a percentage
 data["temperature"] = response[13] #In degrees F multiplied by 10
