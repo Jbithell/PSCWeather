@@ -23,7 +23,7 @@ def sendcommand(command):
     for i in range(5):
         print("Line " + str(i))
         response = ser.readline()
-        print(response.decode('utf-8'))
+        print(response)
     print("Command complete")
 
 
