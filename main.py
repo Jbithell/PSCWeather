@@ -23,10 +23,10 @@ except Exception as e:
 log("[INFO] Current time " + str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
-if ser.readline() == b'\n':
+if ser.readline() == b"\n":
     log("[ERROR] Error getting connection - trying again")
     ser.write(bytes(str("\n"), 'utf8'))
-    if ser.readline() == b'\n': #Retry
+    if ser.readline() == b"\n": #Retry
         log("[ERROR] Error getting connection - rebooting if setting is set")
         if (os.getenv('rebootOnSerialFail', "True") == "True"):
             log("[INFO] Rebooting")
@@ -34,7 +34,8 @@ if ser.readline() == b'\n':
         else:
             log("[INFO] Quitting")
             #sys.exit()
-print(ser.readline())
+ser.readline() #Read the /r character that follows but ignore it
+
 log("[INFO] Ready to start getting data")
 
 def looprequest():
@@ -48,6 +49,7 @@ def looprequest():
     data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
     data["winddirection"] = response[17] #In degrees
     ser.readline() #Read this line but ignore it - it is boring data we don't want
+    ser.readline()  # Read this line but ignore it - it is boring data we don't want
     if data["windspeed"] == 0 and data["winddirection"] == 0: #This indicates it's struggling for data so ignore
         return False
     return data
