@@ -23,9 +23,6 @@ except Exception as e:
 log("[INFO] Current time " + str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
-print(ser.readline())
-print(ser.readline())
-print(ser.readline())
 if ser.readline() == b'\n':
     log("[ERROR] Error getting connection - trying again")
     ser.write(bytes(str("\n"), 'utf8'))
@@ -37,11 +34,13 @@ if ser.readline() == b'\n':
         else:
             log("[INFO] Quitting")
             #sys.exit()
+print(ser.readline())
 log("[INFO] Ready to start getting data")
 
 def looprequest():
     log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
+    print(ser.readline())
     response = ser.readline()
     data = {}
     data["temperature"] = response[13] #In degrees F multiplied by 10
