@@ -1,6 +1,8 @@
 import os
 import serial
-import codecs #Decode the strings
+
+emptyvar = "" #Sometimes you have to assign a serial read to this to stop it being ignored - so I'll go ahead and do that but don't ask my why
+
 def log(message):
     print(message)
 
@@ -19,13 +21,13 @@ except Exception as e:
 print("Sending loop command")
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 print("Sent")
-ser.readline() #Read this line but ignore it - it is just some info to tell you all is well
+emptyvar = ser.readline() #Read this line but ignore it - it is just some info to tell you all is well
 response = ser.readline()
 data = {}
 data["windspeed"] = response[15]
 data["wind10minaverage"] = response[16]
 data["winddirection"] = response[17:18]
 print(data)
-ser.readline() #Read this line but ignore it - it is boring data we don't want
+emptyvar = ser.readline() #Read this line but ignore it - it is boring data we don't want
 
 print("Program done")
