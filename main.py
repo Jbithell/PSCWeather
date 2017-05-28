@@ -22,8 +22,8 @@ def sendcommand(command):
     print(bytes(str(command), 'utf8'))
     for i in range(5):
         print("Line " + str(i))
-        print(codecs.decode(ser.readline(), "hex"))
-        
+        response = ser.readline()
+        print(response)
     print("Command complete")
 
 sendcommand("\n")
