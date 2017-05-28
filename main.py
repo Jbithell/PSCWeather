@@ -17,9 +17,8 @@ except Exception as e:
 ser.write(("\n").encode('ascii'))
 print(ser.readline())
 
-
-ser.write(("GETTIME").encode('ascii'))
-print(("GETTIME").encode('ascii'))
+print("Done listen for new line")
+ser.write(bytes(b"TEST \n"))
 print(ser.readline())
 
 
