@@ -22,6 +22,9 @@ except Exception as e:
 
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
+print(ser.readline())
+print(ser.readline())
+print(ser.readline())
 if ser.readline() == b'\n':
     log("[ERROR] Error getting connection - trying again")
     ser.write(bytes(str("\n"), 'utf8'))
