@@ -19,12 +19,12 @@ def sendcommand(command):
     ser.write(bytes(str(command), 'utf8'))
     print("Sent ")
     print(bytes(str(command), 'utf8'))
-    print(ser.readline())
+    for i in range(5):
+        print("Line " + str(i))
+        print(ser.readline())
     print("Command complete")
 
 sendcommand("\n")
 sendcommand("TEST \n")
 sendcommand("GETTIME \n")
-while True:
-    print(ser.readline())
 print("Program done")
