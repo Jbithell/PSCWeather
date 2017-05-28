@@ -1,7 +1,7 @@
 import os
 import serial
 def log(message):
-    log(message)
+    print(message)
 
 serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
