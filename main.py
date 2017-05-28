@@ -29,4 +29,5 @@ def sendcommand(command):
 sendcommand("\n")
 sendcommand("TEST \n")
 sendcommand("GETTIME \n")
+sendcommand("LOOP 1 \n")
 print("Program done")
