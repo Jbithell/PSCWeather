@@ -17,7 +17,8 @@ except Exception as e:
 def sendcommand(command):
     print ("Sending " + str(command))
     ser.write(bytes(str(command), 'utf8'))
-    print("Sent " + bytes(str(command), 'utf8'))
+    print("Sent ")
+    print(bytes(str(command), 'utf8'))
     print(ser.readline())
     print("Command complete")
 
