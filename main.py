@@ -14,7 +14,7 @@ except Exception as e:
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
         os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
 
-ser.write(("LOOP 1" + "\n").encode('ascii'))
+ser.write(("\n").encode('ascii'))
 print(ser.readline())
 print(ser.name)
 print("Sent and done")
