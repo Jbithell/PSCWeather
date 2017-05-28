@@ -35,10 +35,9 @@ if (ser.readline() != "\n"):
             #sys.exit()
 log("[INFO] Ready to start getting data")
 
-print ("Sending " + str("LOOP 1 \n"))
+log("[INFO] Sending a loop request")
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 response = ser.readline()
-print(response)
 data = {}
 data["humidity"] = response[12] #As a percentage - this is the data from inside the clubhouse
 data["temperature"] = response[13] #In degrees F multiplied by 10
@@ -48,4 +47,4 @@ data["winddirection"] = response[17] #In degrees
 print(data)
 ser.readline() #Read this line but ignore it - it is boring data we don't want
 
-log("Program done")
+log("[INFO] End of Program")
