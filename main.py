@@ -44,11 +44,16 @@ log("[INFO] Ready to start getting data")
 def looprequest():
     log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
-    response = ser.readline()
-    trycount = 0
+    response = ""
+    for i in range(4):
+        response = response + ser.readline()
+    print(response)
+    print(len(response))
+
+    '''    
     while len(response) != 97: #Rudimentary offset error handling
         response = ser.readline()
-        trycount = trycount +1
+        trycount = (trycount+1)
         if (trycount > 5):
             log("[INFO] Wasn't able to get anything useful out of that request - length was never right!")
             return False
@@ -64,7 +69,8 @@ def looprequest():
         log("[INFO] Ignoring data because of 255 direction, speed and average")
         return False #Ignore - it's normally an offset error
     return data
-
+    '''
+    return ""
 while True:
     data = looprequest()
     if data:
