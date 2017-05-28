@@ -15,21 +15,27 @@ except Exception as e:
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
         os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
 
-def sendcommand(command):
-    print ("Sending " + str(command))
-    ser.write(bytes(str(command), 'utf8'))
-    print("Sent ")
-    print(bytes(str(command), 'utf8'))
-    for i in range(5):
-        print("Line " + str(i))
-        response = ser.readline()
-        print(response)
-        for item in response:
-            print(item)
-    print("Command complete")
+
+print ("Sending " + str("\n"))
+ser.write(bytes(str("\n"), 'utf8'))
+print("Sent ")
+print(bytes(str("\n"), 'utf8'))
 
 
-sendcommand("\n")
-sendcommand("TEST \n")
-sendcommand("LOOP 1 \n")
+print ("Sending " + str("LOOP 1 \n"))
+ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
+print("Sent ")
+print(bytes(str("LOOP 1 \n"), 'utf8'))
+for i in range(5):
+    print("Line " + str(i))
+    response = ser.readline()
+    print(response)
+    print(response[14:18])
+    print("Now the rest")
+    for item in response:
+        print(item)
+print("Command complete")
+
+
+
 print("Program done")
