@@ -75,6 +75,6 @@ while True:
     data = looprequest()
     if data:
         print(data)
-    time.sleep(30)
+    time.sleep(10)
 
 log("[INFO] End of Program")
