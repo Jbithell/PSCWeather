@@ -2,6 +2,7 @@ import os
 import serial
 import sys #To quit program
 import time #For time.sleep
+import struct #To merge two bytes in an integer
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     print(message)
@@ -51,6 +52,7 @@ def looprequest():
     try:
         print(response[13])
         print(response[14])
+        print(struct.unpack('>B', response[13] + response[14]))
         #data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
         data["temperature"] = response[14]  # In degrees F multiplied by 10
         data["windspeed"] = response[15] #In mph
