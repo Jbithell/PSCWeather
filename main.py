@@ -47,6 +47,8 @@ def looprequest():
     for i in range(5):
         response = ser.readline()
         print(len(response))
+        print(response)
+
     '''
     response = ser.readline()
     while len(response) != 80: #Rudimentary offset error handling
