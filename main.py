@@ -1,5 +1,6 @@
 import os
 import serial
+import sys #To quit program
 def log(message):
     print(message)
 
@@ -14,9 +15,13 @@ except Exception as e:
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
         log("[INFO] Rebooting")
         os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
+    else:
+        log("[INFO] Quitting")
+        sys.exit()
 
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
+print(ser.readline())
 if (ser.readline() != "\n"):
     log("[ERROR] Error getting connection - trying again")
     ser.write(bytes(str("\n"), 'utf8'))
@@ -25,7 +30,9 @@ if (ser.readline() != "\n"):
         if (os.getenv('rebootOnSerialFail', "True") == "True"):
             log("[INFO] Rebooting")
             os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
-
+        else:
+            log("[INFO] Quitting")
+            #sys.exit()
 log("[INFO] Ready to start getting data")
 
 print ("Sending " + str("LOOP 1 \n"))
