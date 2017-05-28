@@ -18,8 +18,8 @@ ser.write(("\n").encode('ascii'))
 print(ser.readline())
 
 
-ser.write(("GETTIME\n").encode('ascii'))
-print(("GETTIME\n").encode('ascii'))
+ser.write(("GETTIME").encode('ascii'))
+print(("GETTIME").encode('ascii'))
 print(ser.readline())
 
 
