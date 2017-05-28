@@ -40,11 +40,11 @@ ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 response = ser.readline()
 print(response)
 data = {}
-data["humidity"] = response[34] #As a percentage
+data["humidity"] = response[12] #As a percentage - this is the data from inside the clubhouse
 data["temperature"] = response[13] #In degrees F multiplied by 10
 data["windspeed"] = response[15] #In mph
 data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
-data["winddirection"] = response[17:18] #In degrees
+data["winddirection"] = response[17] #In degrees
 print(data)
 ser.readline() #Read this line but ignore it - it is boring data we don't want
 
