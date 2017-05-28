@@ -16,23 +16,15 @@ except Exception as e:
         os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
 
 
-print ("Sending " + str("\n"))
-ser.write(bytes(str("\n"), 'utf8'))
-print("Sent ")
-print(bytes(str("\n"), 'utf8'))
-
-
-print ("Sending " + str("LOOP 1 \n"))
+print("Sending loop command")
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
-print("Sent ")
-print(bytes(str("LOOP 1 \n"), 'utf8'))
-print(ser.readline()) #Read this line but ignore it - it is just some info to tell you all is well
+print("Sent")
+ser.readline() #Read this line but ignore it - it is just some info to tell you all is well
 response = ser.readline()
-print(response)
 data = {}
 data["windspeed"] = response[15]
 data["wind10minaverage"] = response[16]
-data["winddirection"] = response[17]
+data["winddirection"] = response[17:18]
 print(data)
 ser.readline() #Read this line but ignore it - it is boring data we don't want
 
