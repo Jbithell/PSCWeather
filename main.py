@@ -25,4 +25,6 @@ def sendcommand(command):
 sendcommand("\n")
 sendcommand("TEST \n")
 sendcommand("GETTIME \n")
+while True:
+    print(ser.readline())
 print("Program done")
