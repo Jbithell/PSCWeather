@@ -38,7 +38,6 @@ log("[INFO] Sending a loop request")
 ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
 response = ser.readline()
 data = {}
-data["humidity"] = response[12] #As a percentage - this is the data from inside the clubhouse
 data["temperature"] = response[13] #In degrees F multiplied by 10
 data["windspeed"] = response[15] #In mph
 data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
