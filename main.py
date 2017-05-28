@@ -21,11 +21,10 @@ except Exception as e:
 
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
-print(ser.readline())
-if (ser.readline() != "\n"):
+if "\n" in ser.readline():
     log("[ERROR] Error getting connection - trying again")
     ser.write(bytes(str("\n"), 'utf8'))
-    if (ser.readline() != "\n"):
+    if "\n" in ser.readline(): #Retry
         log("[ERROR] Error getting connection - rebooting if setting is set")
         if (os.getenv('rebootOnSerialFail', "True") == "True"):
             log("[INFO] Rebooting")
