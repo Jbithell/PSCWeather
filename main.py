@@ -17,3 +17,4 @@ except Exception as e:
 ser.write(("LOOP 1" + "\n").encode('ascii'))
 print(ser.readline())
 print(ser.name)
+print("Sent and done")
