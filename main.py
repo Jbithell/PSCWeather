@@ -30,9 +30,9 @@ print(ser.readline()) #Read this line but ignore it - it is just some info to te
 response = ser.readline()
 print(response)
 data = {}
-data["windspeed"] = response[14]
-data["wind10minaverage"] = response[15]
-data["winddirection"] = response[16]
+data["windspeed"] = response[15]
+data["wind10minaverage"] = response[16]
+data["winddirection"] = response[17]
 print(data)
 ser.readline() #Read this line but ignore it - it is boring data we don't want
 
