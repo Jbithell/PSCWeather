@@ -23,7 +23,7 @@ def sendcommand(command):
     for i in range(5):
         print("Line " + str(i))
         response = ser.readline()
-        print(response)
+        print(str(response))
     print("Command complete")
 
 sendcommand("\n")
