@@ -19,6 +19,7 @@ print(ser.readline())
 
 
 ser.write(("GETTIME\n").encode('ascii'))
+print(("GETTIME\n").encode('ascii'))
 print(ser.readline())
 
 
