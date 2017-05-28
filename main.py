@@ -7,7 +7,7 @@ serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
 try:
     ser = serial.Serial(serialport, baudrate)  # Open a serial connection
-    ser.open()
+    ser.isOpen()
 except Exception as e:
     print(e)
     log("Cannot find device in serial port or open a connection")
