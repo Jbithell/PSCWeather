@@ -44,7 +44,7 @@ log("[INFO] Ready to start getting data")
 def looprequest():
     log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
-    response = ""
+    response = b""
     for i in range(4):
         response = response + ser.readline()
     print(response)
