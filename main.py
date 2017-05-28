@@ -50,10 +50,10 @@ def looprequest():
     data = {}
     try:
         #data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
-        data["temperature"] = response[13]  # In degrees F multiplied by 10
+        data["temperature"] = response[14]  # In degrees F multiplied by 10
         data["windspeed"] = response[15] #In mph
         data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
-        data["winddirection"] = response[17] #In degrees
+        data["winddirection"] = response[18] #In degrees
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
