@@ -2,6 +2,7 @@ import os
 import serial
 import sys #To quit program
 import time #For time.sleep
+from time import gmtime, strftime #For current time
 def log(message):
     print(message)
 
@@ -19,7 +20,7 @@ except Exception as e:
     else:
         log("[INFO] Quitting")
         sys.exit()
-
+log("[INFO] Current time " + str(strftime("%Y-%m-%d %H:%M:%S", gmtime())))
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
 print(ser.readline())
