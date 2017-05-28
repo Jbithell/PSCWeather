@@ -16,5 +16,10 @@ except Exception as e:
 
 ser.write(("\n").encode('ascii'))
 print(ser.readline())
-print(ser.name)
-print("Sent and done")
+
+
+ser.write(("GETTIME\n").encode('ascii'))
+print(ser.readline())
+
+
+print("Program done")
