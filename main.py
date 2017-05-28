@@ -45,9 +45,8 @@ def looprequest():
     log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
     response = ser.readline()
-    while True: #Rudimentary offset error handling
+    while len(response) != 80: #Rudimentary offset error handling
         response = ser.readline()
-        print(len(response))
     data = {}
     data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
     data["windspeed"] = response[15] #In mph
