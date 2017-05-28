@@ -3,7 +3,7 @@ import serial
 def log(message):
     print(message)
 
-serialport = os.environ.get('serialPort', '/dev/serial0')
+serialport = os.environ.get('serialPort', '/dev/ttyS0')
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
 try:
     ser = serial.Serial(serialport, baudrate)  # Open a serial connection
