@@ -3,6 +3,9 @@ import serial
 import sys #To quit program
 import time #For time.sleep
 import struct #To merge two bytes in an integer
+import urllib #For encoding data
+import urllib2 #For connecting to internet
+
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     print(message)
@@ -74,6 +77,14 @@ while True:
     data = looprequest()
     if data:
         print(data)
+        try:
+            requestPayload = urllib.urlencode(data)
+            request = urllib2.Request(os.environ.get('uploadUrl', ''), requestPayload)
+            requestResponse = urllib2.urlopen(request).read()
+            print(requestResponse)
+        except Exception as e:
+            log("[ERROR] Couldn't upload data online")
+
     time.sleep(10)
 
 log("[INFO] End of Program")
