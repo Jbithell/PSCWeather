@@ -60,7 +60,7 @@ def looprequest():
         data["barometer"] = struct.unpack('<H', response[8:10])[0]  # Hg/1000
         data["humidity"] = response[34] # Outside - %
         data["consoleBattery"] = round((((int(struct.unpack('<H', response[88:90])[0])*300)/512)/100), 1) #In volts
-        data["timestamp"] = time.time()
+        data["timestamp"] = round(time.time(),0)
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
