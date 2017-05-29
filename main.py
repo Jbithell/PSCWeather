@@ -50,15 +50,14 @@ def looprequest():
         response = response + ser.readline()
     data = {}
     try:
-        print(response[13:15])
-        print(struct.unpack('<H', response[13:15]))
-        print(response[17:19])
-        print(struct.unpack('<H', response[17:19]))
-        #data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
-        data["temperature"] = response[13]  # In degrees F multiplied by 10
-        data["windspeed"] = response[15] #In mph
-        data["wind10minaverage"] = response[16] #In mph - and average of the last 10 minutes
-        data["winddirection"] = response[17] #In degrees
+        data["temperatureRaw"] = struct.unpack('<H', response[13:15])  # In degrees F multiplied by 10
+        data["temperatureC"] = (((data["temperatureRaw"]/10)-32)*(5/9)) #Converted into C
+        data["windSpeed"] = response[15] #In mph
+        data["wind10MinAverage"] = response[16] #In mph - and average of the last 10 minutes
+        data["windDirection"] = struct.unpack('<H', response[17:19]) #In degrees
+        data["barometer"] = struct.unpack('<H', response[8:10])  # Hg/1000
+        data["humidity"] = response[34] # Outside - %
+        data["consoleBattery"] = struct.unpack('<H', response[88:90]) #Just a test rtn
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
