@@ -29,7 +29,7 @@ WORKDIR /usr/src/app
 
 # This will copy all files in our root to the working  directory in the container
 COPY . ./
-COPY weatherdatabase.sqlite3 /data/weatherdatabase.sqlite3
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # main.py will run when container starts up on the device
