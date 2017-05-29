@@ -5,6 +5,7 @@ import time #For time.sleep
 import struct #To merge two bytes in an integer
 import urllib.parse #For encoding datainternet
 import urllib.request #For internet
+import json #To parse response
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
@@ -80,7 +81,9 @@ while True:
         try:
             requestPayload = urllib.parse.urlencode(data).encode("utf-8")
             requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload).read()
-            print(requestResponse)
+            requestParsedResponse = json.load(requestResponse)
+            if (requestParsedResponse["sucess"] != "true"):
+                log("[ERROR] Couldn't upload the data online " + requestParsedResponse["message"])
         except Exception as e:
             log("[ERROR] Couldn't upload data online " + str(e))
 
