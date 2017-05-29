@@ -51,9 +51,9 @@ def looprequest():
     data = {}
     try:
         print(response[13:15])
-        print(struct.unpack('H', response[13:15]))
+        print(struct.unpack('<H', response[13:15]))
         print(response[17:19])
-        print(struct.unpack('H', response[17:19]))
+        print(struct.unpack('<H', response[17:19]))
         #data["temperature"] = (((response[13]/10)-32)*(5/9)) #In degrees F multiplied by 10, converted into C
         data["temperature"] = response[13]  # In degrees F multiplied by 10
         data["windspeed"] = response[15] #In mph
