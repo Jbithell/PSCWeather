@@ -79,7 +79,7 @@ while True:
     if data:
         print(data)
         try:
-            requestPayload = urllib.parse.urlencode(data)
+            requestPayload = urllib.parse.urlencode(data).encode("utf-8")
             requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload).read()
             print(requestResponse)
         except Exception as e:
