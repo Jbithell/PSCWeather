@@ -78,9 +78,9 @@ while True:
     if data:
         print(data)
         try:
-            requestPayload = urllib.urlencode(data)
-            request = urllib.Request(os.environ.get('uploadUrl', ''), requestPayload)
-            requestResponse = urllib.urlopen(request).read()
+            requestPayload = urllib.parse.urlencode(data)
+            request = urllib.request(os.environ.get('uploadUrl', ''), requestPayload)
+            requestResponse = urllib.request.urlopen(request).read()
             print(requestResponse)
         except Exception as e:
             log("[ERROR] Couldn't upload data online " + str(e))
