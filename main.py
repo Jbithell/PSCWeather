@@ -77,7 +77,6 @@ def looprequest():
 while True:
     data = looprequest()
     if data:
-        print(data)
         try:
             requestPayload = urllib.parse.urlencode(data).encode("utf-8")
             requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload).read()
