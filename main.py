@@ -3,7 +3,8 @@ import serial
 import sys #To quit program
 import time #For time.sleep
 import struct #To merge two bytes in an integer
-import urllib #For encoding data & internet
+import urllib.parse #For encoding datainternet
+import urllib.request #For internet
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
