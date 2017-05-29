@@ -61,6 +61,7 @@ def looprequest():
         data["barometer"] = struct.unpack('<H', response[8:10])  # Hg/1000
         data["humidity"] = response[34] # Outside - %
         data["consoleBattery"] = int(struct.unpack('<H', response[88:90])) #Just a test rtn
+        data["timestamp"] = time.localtime()
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
