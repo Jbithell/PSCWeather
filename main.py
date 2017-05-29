@@ -6,10 +6,13 @@ import struct #To merge two bytes in an integer
 import urllib.parse #For encoding datainternet
 import urllib.request #For internet
 import json #To parse response
+import sqlite3 #Database
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     print(message)
+
+sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
 serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
@@ -74,6 +77,12 @@ def looprequest():
         log("[INFO] Ignoring data because of 255 direction, speed and average")
         return False #Ignore - it's normally an offset error
     return data
+def storefailedrequest(data):
+    global sqliteconn
+    cursor = sqliteconn.cursor()
+    cursor.execute('INSERT INTO `weatherData`(`id`,`timestamp`,`windSpeedMPH`,`windSpeed10MinAverageMPH`,`windDirection`,`temperatureC`,`humidity`,`barometer`) VALUES (NULL,' + data["timestamp"] + ',' + data["windSpeed"] + ',' + data["wind10MinAverage"] + ',' + data["windDirection"] + ',' + data["temperatureC"] + ',' + data["humidity"] + ',' + data["barometer"] + ');')
+    cursor.commit()
+    cursor.close()
 
 while True:
     data = looprequest()
@@ -83,9 +92,12 @@ while True:
             requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload).read()
             requestParsedResponse = json.load(requestResponse)
             if (requestParsedResponse["sucess"] != "true"):
-                log("[ERROR] Couldn't upload the data online - server rejected with " + requestParsedResponse["message"])
+                log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
+                storefailedrequest(data)
         except Exception as e:
             log("[ERROR] Couldn't upload data online " + str(e))
+            storefailedrequest(data)
+
 
     time.sleep(10)
 
