@@ -83,7 +83,7 @@ while True:
             requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload).read()
             requestParsedResponse = json.load(requestResponse)
             if (requestParsedResponse["sucess"] != "true"):
-                log("[ERROR] Couldn't upload the data online " + requestParsedResponse["message"])
+                log("[ERROR] Couldn't upload the data online - server rejected with " + requestParsedResponse["message"])
         except Exception as e:
             log("[ERROR] Couldn't upload data online " + str(e))
 
