@@ -80,7 +80,7 @@ def looprequest():
 def storefailedrequest(data):
     global sqliteconn
     cursor = sqliteconn.cursor()
-    cursor.execute('INSERT INTO `weatherData`(`id`,`timestamp`,`windSpeedMPH`,`windSpeed10MinAverageMPH`,`windDirection`,`temperatureC`,`humidity`,`barometer`) VALUES (NULL,' + data["timestamp"] + ',' + data["windSpeed"] + ',' + data["wind10MinAverage"] + ',' + data["windDirection"] + ',' + data["temperatureC"] + ',' + data["humidity"] + ',' + data["barometer"] + ');')
+    cursor.execute('INSERT INTO `weatherData`(`id`,`timestamp`,`windSpeedMPH`,`windSpeed10MinAverageMPH`,`windDirection`,`temperatureC`,`humidity`,`barometer`) VALUES (NULL,' + str(data["timestamp"]) + ',' + str(data["windSpeed"]) + ',' + str(data["wind10MinAverage"]) + ',' + str(data["windDirection"]) + ',' + str(data["temperatureC"]) + ',' + str(data["humidity"]) + ',' + str(data["barometer"]) + ');')
     cursor.commit()
     cursor.close()
 
