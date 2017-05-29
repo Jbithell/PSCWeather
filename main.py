@@ -83,7 +83,7 @@ while True:
             requestResponse = urllib.urlopen(request).read()
             print(requestResponse)
         except Exception as e:
-            log("[ERROR] Couldn't upload data online")
+            log("[ERROR] Couldn't upload data online " + str(e))
 
     time.sleep(10)
 
