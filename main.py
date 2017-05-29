@@ -93,6 +93,7 @@ while True:
             requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
             if (requestParsedResponse["success"] != "true"):
                 log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
+                print(requestParsedResponse)
                 #storefailedrequest(data)
         except Exception as e:
             log("[ERROR] Couldn't upload data online " + str(e))
