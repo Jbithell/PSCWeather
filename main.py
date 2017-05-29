@@ -65,10 +65,10 @@ def looprequest():
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
-    if data["windspeed"] == 0 and data["winddirection"] == 0: #This indicates it's struggling for data so ignore
+    if data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
         return False
-    elif data["windspeed"] == 255 and data["wind10minaverage"] == 255:
+    elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255:
         log("[INFO] Ignoring data because of 255 direction, speed and average")
         return False #Ignore - it's normally an offset error
     return data
