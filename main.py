@@ -75,6 +75,7 @@ def looprequest():
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255:
         log("[INFO] Ignoring data because of 255 direction, speed and average")
+        print(response)
         return False #Ignore - it's normally an offset error
     return data
 def storefailedrequest(data): #Cache all the requests that didn't work
@@ -99,6 +100,6 @@ while True:
             #storefailedrequest(data)
 
 
-    time.sleep(10)
+    time.sleep(60)
 
 log("[INFO] End of Program")
