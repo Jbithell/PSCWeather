@@ -56,6 +56,7 @@ def looprequest():
     for i in range(4):
         response = response + ser.readline()
     data = {}
+    print(response)
     try:
         data["temperatureRaw"] = struct.unpack('<H', response[13:15])[0]  # In degrees F multiplied by 10
         data["temperatureC"] = round((((int(data["temperatureRaw"])/10)-32)*(5/9)), 1) #Converted into C into 1 dp
@@ -75,7 +76,6 @@ def looprequest():
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255:
         log("[INFO] Ignoring data because of 255 direction, speed and average")
-        print(response)
         return False #Ignore - it's normally an offset error
     return data
 def storefailedrequest(data): #Cache all the requests that didn't work
