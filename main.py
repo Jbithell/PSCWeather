@@ -96,6 +96,8 @@ def looprequest():
         previousworkingresponse = thisresponse
         return data
     else:
+        if (data["wind10MinAverage"] == 255):
+            data["wind10MinAverage"] = data["windSpeed"]
         previousworkingresponse = thisresponse
         return data
 def storefailedrequest(data): #Cache all the requests that didn't work
