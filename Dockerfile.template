@@ -14,7 +14,8 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
     python3-setuptools \
     libfreetype6-dev \
     rpl \
-    git 
+    git \
+    nano
 
 RUN sudo easy_install3 pip
 RUN pip install pyserial
