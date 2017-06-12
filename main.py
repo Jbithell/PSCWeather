@@ -30,28 +30,36 @@ except Exception as e:
         sys.exit()
 log("[INFO] Current time " + str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
 log("[INFO] Opening a connection to the weather station")
-ser.write(bytes(str("\n"), 'utf8'))
-if ser.readline() == b"\n":
-    log("[ERROR] Error getting connection - trying again")
+def connectioncheck():
+    log("[INFO] Running a connection check")
     ser.write(bytes(str("\n"), 'utf8'))
     if ser.readline() == b"\n":
-        log("[ERROR] Error getting connection - trying again one last time")
+        log("[ERROR] Error getting connection - trying again")
         ser.write(bytes(str("\n"), 'utf8'))
-        if ser.readline() == b"\n": #Retry
-            log("[ERROR] Error getting connection - rebooting if setting is set")
-            if (os.getenv('rebootOnSerialFail', "True") == "True"):
-                log("[INFO] Rebooting")
-                os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
-            else:
-                log("[INFO] Quitting")
-                #sys.exit()
-ser.readline() #Read the /r character that follows but ignore it
+        if ser.readline() == b"\n":
+            log("[ERROR] Error getting connection - trying again one last time")
+            ser.write(bytes(str("\n"), 'utf8'))
+            if ser.readline() == b"\n": #Retry
+                log("[ERROR] Error getting connection - rebooting if setting is set")
+                if (os.getenv('rebootOnSerialFail', "True") == "True"):
+                    log("[INFO] Rebooting")
+                    os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
+                else:
+                    log("[INFO] Quitting")
+                    #sys.exit()
+
+connectioncheck()
+
+
+
 
 log("[INFO] Ready to start getting data")
 previousworkingresponse = "" #Global var
 def looprequest():
     global previousworkingresponse
     #log("[INFO] Sending a loop request")
+    for i in range(2):
+        ser.readline() #This is a cleanup basically
     ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
     response = b""
     for i in range(4):
@@ -70,22 +78,23 @@ def looprequest():
         data["timestamp"] = round(time.time(),0)
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
+        print(response)
         return False
 
     if data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
-        print("PRINTING THIS RESPONSE:")
-        print(response)
-        print("PRINTING LAST WORKING RESPONSE TO COMPARE:")
-        print(previousworkingresponse)
+        connectioncheck()
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255:
         log("[INFO] Ignoring data because of 255 direction, speed and average")
-        print("PRINTING THIS RESPONSE:")
-        print(response)
-        print("PRINTING LAST WORKING RESPONSE TO COMPARE:")
-        print(previousworkingresponse)
+        connectioncheck()
         return False #Ignore - it's normally an offset error
+    elif data["wind10MinAverage"] == 255:
+        #Sometimes this happens - don't ask me why - it just does - for some reason the solution is to just re-run the connection check and it works again
+        log("[INFO] Ignoring wind average because it's 255")
+        data["wind10MinAverage"] = data["windSpeed"] #Fudge it for now
+        previousworkingresponse = thisresponse
+        return data
     else:
         previousworkingresponse = thisresponse
         return data
@@ -111,6 +120,6 @@ while True:
             #storefailedrequest(data)
 
 
-    time.sleep(60)
+    time.sleep(30)
 
 log("[INFO] End of Program")
