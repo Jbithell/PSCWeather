@@ -7,10 +7,17 @@ import urllib.parse #For encoding datainternet
 import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
+from raven import Client #error reporting
+
+#Ssetup raven
+errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
+
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
+    global errorclient
     print(message)
+    errorclient.captureMessage(message)
 
 sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
@@ -20,6 +27,7 @@ try:
     ser = serial.Serial(serialport, baudrate, timeout=2)  # Open a serial connection
     ser.isOpen()
 except Exception as e:
+    errorclient.captureException()
     log(e)
     log("[ERROR] Cannot find device in serial port or open a connection")
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
@@ -70,6 +78,7 @@ def looprequest():
         data["consoleBattery"] = round((((int(struct.unpack('<H', response[88:90])[0])*300)/512)/100), 1) #In volts
         data["timestamp"] = round(time.time(),0)
     except Exception as e:
+        errorclient.captureException()
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
@@ -105,6 +114,7 @@ while True:
                 log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
                 #storefailedrequest(data)
         except Exception as e:
+            errorclient.captureException()
             log("[ERROR] Couldn't upload data online " + str(e))
             #storefailedrequest(data)
     if errorcount > 5:
