@@ -1,6 +1,5 @@
 import os
 import serial
-import sys #To quit program
 import time #For time.sleep
 import struct #To merge two bytes in an integer
 import urllib.parse #For encoding datainternet
@@ -12,6 +11,12 @@ from raven import Client #error reporting
 #Ssetup raven
 errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
 
+def reboot():
+    #Use Resin.io api to reboot
+    requestResponse = urllib.request.urlopen(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
+    requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
+    if requestParsedResponse["Data"] != "OK":
+        print(requestParsedResponse["Error"])
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
@@ -32,10 +37,10 @@ except Exception as e:
     log("[ERROR] Cannot find device in serial port or open a connection")
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
         log("[INFO] Rebooting")
-        os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
+        reboot()  # Reboot the device if cannot connect to serial port - ie have a second attempt
     else:
         log("[INFO] Quitting")
-        sys.exit()
+        reboot()
 log("[INFO] Current time " + str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
 log("[INFO] Opening a connection to the weather station")
 ser.write(bytes(str("\n"), 'utf8'))
@@ -49,10 +54,10 @@ if ser.readline() == b"\n":
             log("[ERROR] Error getting connection - rebooting if setting is set")
             if (os.getenv('rebootOnSerialFail', "True") == "True"):
                 log("[INFO] Rebooting")
-                os.system("reboot")  # Reboot the device if cannot connect to serial port - ie have a second attempt
+                reboot()  # Reboot the device if cannot connect to serial port - ie have a second attempt
             else:
                 log("[INFO] Quitting")
-                #sys.exit()
+                reboot()
 ser.readline() #Read the /r character that follows but ignore it
 
 log("[INFO] Ready to start getting data")
@@ -118,7 +123,7 @@ while True:
             log("[ERROR] Couldn't upload data online " + str(e))
             #storefailedrequest(data)
     if errorcount > 5:
-        os.system("reboot")
+        reboot()
 
     time.sleep(60)
 
