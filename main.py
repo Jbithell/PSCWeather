@@ -22,7 +22,7 @@ os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     global errorclient
     print(message)
-    errorclient.captureMessage(message)
+
 
 sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
@@ -52,12 +52,12 @@ if ser.readline() == b"\n":
         ser.write(bytes(str("\n"), 'utf8'))
         if ser.readline() == b"\n": #Retry
             log("[ERROR] Error getting connection - rebooting if setting is set")
+            errorclient.captureMessage("[ERROR] Error getting connection - rebooting if setting is set")
             if (os.getenv('rebootOnSerialFail', "True") == "True"):
                 log("[INFO] Rebooting")
                 reboot()  # Reboot the device if cannot connect to serial port - ie have a second attempt
             else:
                 log("[INFO] Quitting")
-                reboot()
 ser.readline() #Read the /r character that follows but ignore it
 
 log("[INFO] Ready to start getting data")
@@ -84,21 +84,25 @@ def looprequest():
         data["timestamp"] = round(time.time(),0)
     except Exception as e:
         errorclient.captureException()
+        errorclient.captureMessage(str(e))
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
     if data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
+        errorclient.captureMessage("[INFO] Ignoring data because of 0 wind direction and speed")
         errorcount = errorcount + 1
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255:
         log("[INFO] Ignoring data because of 255 direction, speed and average")
         errorcount = errorcount+1
+        errorclient.captureMessage("[INFO] Ignoring data because of 255 direction, speed and average")
         return False #Ignore - it's normally an offset error
     else:
         if (data["wind10MinAverage"] == 255):
             data["wind10MinAverage"] = data["windSpeed"]
             errorcount = errorcount + 1
+            errorclient.captureMessage("[INFO] Ignoring data because of 255 direction, speed and average")
         previousworkingresponse = thisresponse
         return data
 def storefailedrequest(data): #Cache all the requests that didn't work
