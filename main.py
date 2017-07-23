@@ -8,7 +8,7 @@ import json #To parse response
 import sqlite3 #Database
 from raven import Client #error reporting
 
-#Ssetup raven
+#Ssetup raven - as a client to sentry.io
 errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
 
 def reboot():
@@ -64,9 +64,9 @@ log("[INFO] Ready to start getting data")
 previousworkingresponse = "" #Global var
 errorcount = 0
 def looprequest():
-    global previousworkingresponse, errorcount
+    global previousworkingresponse, errorcount, errorclient
     #log("[INFO] Sending a loop request")
-    ser.write(bytes(str("LOOP 1 \n"), 'utf8'))
+    ser.write(bytes(str("LOOP 1 \n"), 'utf8')) #Send a request to the data logger
     response = b""
     for i in range(4):
         response = response + ser.readline()
@@ -93,16 +93,15 @@ def looprequest():
         errorclient.captureMessage("[INFO] Ignoring data because of 0 wind direction and speed")
         errorcount = errorcount + 1
         return False
-    elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255:
-        log("[INFO] Ignoring data because of 255 direction, speed and average")
-        errorcount = errorcount+1
-        errorclient.captureMessage("[INFO] Ignoring data because of 255 direction, speed and average")
-        return False #Ignore - it's normally an offset error
+    elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255: #This happens when console in setup mode
+        log("[ERROR] CONSOLE IN SETUP MENU (Ignoring data because of 255 direction, speed and average)")
+        errorclient.captureMessage("Device in Setup Menu")
+        return False #Ignore - there's very little we can do remotely :(
     else:
         if (data["wind10MinAverage"] == 255):
             data["wind10MinAverage"] = data["windSpeed"]
             errorcount = errorcount + 1
-            errorclient.captureMessage("[INFO] Ignoring data because of 255 direction, speed and average")
+            errorclient.captureMessage("Wind 10minute average is 255") #This happens when the device is just starting up and hasn't yet been run for 10 minutes
         previousworkingresponse = thisresponse
         return data
 def storefailedrequest(data): #Cache all the requests that didn't work
@@ -126,7 +125,7 @@ while True:
             errorclient.captureException()
             log("[ERROR] Couldn't upload data online " + str(e))
             #storefailedrequest(data)
-    if errorcount > 5:
+    if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
     time.sleep(60)
