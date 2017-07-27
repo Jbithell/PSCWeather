@@ -90,7 +90,7 @@ def looprequest():
 
     print(str(response[0]),str(response[1]),str(response[2])) #Should be LOO
 
-    if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100:
+    if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
         log("[INFO] Ignoring data because it's a bit wierd")
         errorclient.captureMessage("[INFO] Ignoring data because it's a bit wierd")
         return False
