@@ -88,6 +88,8 @@ def looprequest():
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
+    print(str(response[0]) + str(response[1]) + str(response[2])) //Should be LOO
+
     if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100:
         log("[INFO] Ignoring data because it's a bit wierd")
         errorclient.captureMessage("[INFO] Ignoring data because it's a bit wierd")
