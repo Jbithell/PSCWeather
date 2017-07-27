@@ -72,6 +72,11 @@ def looprequest():
         response = response + ser.readline()
     data = {}
     thisresponse = response
+    if str(response[0]) != 6:
+        log("[ERROR] Device failed to respond with ASCII ACK")
+        errorclient.captureMessage("No ascii ACK")
+        #Didn't respond with an Ascii acknowlegement
+        return False
     try:
         data["temperatureRaw"] = struct.unpack('<H', response[13:15])[0]  # In degrees F multiplied by 10
         data["temperatureC"] = round((((int(data["temperatureRaw"])/10)-32)*(5/9)), 1) #Converted into C into 1 dp
@@ -88,15 +93,15 @@ def looprequest():
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
-    print(str(response[0]),str(response[1]),str(response[2])) #Should be LOO
+    print(str(chr(response[1])) + str(chr(response[2])) + str(chr(response[3]))) #Should be LOO
 
     if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
         log("[INFO] Ignoring data because it's a bit wierd")
-        errorclient.captureMessage("[INFO] Ignoring data because it's a bit wierd")
+        errorclient.captureMessage("Wierd values")
         return False
     elif data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
-        errorclient.captureMessage("[INFO] Ignoring data because of 0 wind direction and speed")
+        errorclient.captureMessage("0 wind direction and speed")
         errorcount = errorcount + 1
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255: #This happens when console in setup mode
