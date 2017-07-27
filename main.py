@@ -72,10 +72,14 @@ def looprequest():
         response = response + ser.readline()
     data = {}
     thisresponse = response
-    if int(response[0]) != 6:
+    if (len(thisresponse) < 100):
+        log("[ERROR] Data too short")
+        errorclient.captureMessage("Data too short")
+        return False
+    elif int(response[0]) != 6:
         log("[ERROR] Device failed to respond with ASCII ACK")
         errorclient.captureMessage("No ascii ACK")
-        #Didn't respond with an Ascii acknowlegement
+        # Didn't respond with an Ascii acknowlegement
         return False
     try:
         data["temperatureRaw"] = struct.unpack('<H', response[13:15])[0]  # In degrees F multiplied by 10
