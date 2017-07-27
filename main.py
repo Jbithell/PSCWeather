@@ -134,6 +134,6 @@ while True:
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
-    time.sleep(60)
+    time.sleep(2)
 
 log("[INFO] End of Program")
