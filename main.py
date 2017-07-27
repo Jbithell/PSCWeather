@@ -97,7 +97,7 @@ def looprequest():
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
-    print(str(chr(response[1])) + str(chr(response[2])) + str(chr(response[3]))) #Should be LOO
+    #print(str(chr(response[1])) + str(chr(response[2])) + str(chr(response[3]))) #Should be LOO
 
     if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
         log("[INFO] Ignoring data because it's a bit wierd")
