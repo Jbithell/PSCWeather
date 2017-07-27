@@ -88,7 +88,11 @@ def looprequest():
         log("[ERROR] Ignoring data because of error: " + str(e))
         return False
 
-    if data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
+    if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100:
+        log("[INFO] Ignoring data because it's a bit wierd")
+        errorclient.captureMessage("[INFO] Ignoring data because it's a bit wierd")
+        return False
+    elif data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
         errorclient.captureMessage("[INFO] Ignoring data because of 0 wind direction and speed")
         errorcount = errorcount + 1
