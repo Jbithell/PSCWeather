@@ -72,7 +72,7 @@ def looprequest():
         response = response + ser.readline()
     data = {}
     thisresponse = response
-    if str(response[0]) != 6:
+    if int(response[0]) != 6:
         log("[ERROR] Device failed to respond with ASCII ACK")
         errorclient.captureMessage("No ascii ACK")
         #Didn't respond with an Ascii acknowlegement
