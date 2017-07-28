@@ -133,6 +133,7 @@ while True:
             requestPayload = urllib.parse.urlencode(data).encode("utf-8")
             requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
             response = requestResponse.read().decode('utf-8')
+            print(response)
             requestParsedResponse = json.loads(response)
             if requestParsedResponse["success"] != True:
                 log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
