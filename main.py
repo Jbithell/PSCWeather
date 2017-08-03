@@ -13,6 +13,7 @@ errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608
 
 def reboot():
     #Use Resin.io api to reboot
+    log("Rebooting")
     requestResponse = urllib.request.urlopen(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
     requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
     if requestParsedResponse["Data"] != "OK":
@@ -75,10 +76,12 @@ def looprequest():
     if (len(thisresponse) < 100):
         log("[ERROR] Data too short")
         errorclient.captureMessage("Data too short")
+        errorcount = errorcount + 1
         return False
     elif int(response[0]) != 6:
         log("[ERROR] Device failed to respond with ASCII ACK")
         errorclient.captureMessage("No ascii ACK")
+        errorcount = errorcount + 1
         # Didn't respond with an Ascii acknowlegement
         return False
     try:
@@ -95,6 +98,7 @@ def looprequest():
         errorclient.captureException()
         errorclient.captureMessage(str(e))
         log("[ERROR] Ignoring data because of error: " + str(e))
+        errorcount = errorcount + 1
         return False
 
     #print(str(chr(response[1])) + str(chr(response[2])) + str(chr(response[3]))) #Should be LOO
@@ -110,6 +114,7 @@ def looprequest():
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255: #This happens when console in setup mode
         log("[ERROR] CONSOLE IN SETUP MENU (Ignoring data because of 255 direction, speed and average)")
+        errorcount = errorcount + 1
         errorclient.captureMessage("Device in Setup Menu")
         return False #Ignore - there's very little we can do remotely :(
     else:
