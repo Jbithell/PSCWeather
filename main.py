@@ -11,19 +11,23 @@ from raven import Client #error reporting
 #Ssetup raven - as a client to sentry.io
 errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
 
-def reboot():
-    #Use Resin.io api to reboot
-    log("Rebooting")
-    requestResponse = urllib.request.urlopen(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
-    requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
-    if requestParsedResponse["Data"] != "OK":
-        print(requestParsedResponse["Error"])
+print(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
+
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     global errorclient
     print(message)
 
+
+def reboot():
+    #Use Resin.io api to reboot
+    log("Rebooting")
+
+    requestResponse = urllib.request.urlopen(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
+    requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
+    if requestParsedResponse["Data"] != "OK":
+        print(requestParsedResponse["Error"])
 
 sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
