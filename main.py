@@ -7,7 +7,9 @@ import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
 from raven import Client #error reporting
-from urllib.request import urlopen #reboots
+from resin import Resin #Resin.io interface
+resin = Resin()
+
 
 
 #Ssetup raven - as a client to sentry.io
@@ -24,9 +26,8 @@ def reboot():
     log("Rebooting")
     rebooturl = str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY'))
 
-    jsonurl = urlopen(rebooturl)
-    text = json.loads(jsonurl.read())
-    print(text)
+
+    resin.models.supervisor.reboot()
     '''
     requestResponse = urllib.request.urlopen(rebooturl)
     requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
