@@ -20,13 +20,21 @@ def log(message):
 def reboot():
     #Use Resin.io api to reboot
     log("Rebooting")
+    rebooturl = str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY'))
 
-    requestResponse = urllib.request.urlopen(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
+    jsonurl = urlopen(rebooturl)
+    text = json.loads(jsonurl.read())
+    print(text)
+    '''
+    requestResponse = urllib.request.urlopen(rebooturl)
     requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
     if requestParsedResponse["Data"] != "OK":
         print(requestParsedResponse["Error"])
+    '''
 
 reboot()
+
+
 sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
 serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
