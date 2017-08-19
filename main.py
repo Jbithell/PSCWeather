@@ -7,6 +7,8 @@ import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
 from raven import Client #error reporting
+
+from urllib.parse import urlparse #Fix for Resin.io interface
 from resin import Resin #Resin.io interface
 resin = Resin()
 
