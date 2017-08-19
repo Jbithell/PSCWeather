@@ -1,4 +1,5 @@
 import os
+import sys #To kill app
 import serial
 import time #For time.sleep
 import struct #To merge two bytes in an integer
@@ -24,13 +25,10 @@ def reboot():
     log("Rebooting")
     rebooturl = str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY'))
     os.system('curl -X POST --header "Content-Type:application/json" "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"')
-    '''
-    requestResponse = urllib.request.urlopen(rebooturl)
-    requestParsedResponse = json.loads(requestResponse.read().decode('utf-8'))
-    if requestParsedResponse["Data"] != "OK":
-        print(requestParsedResponse["Error"])
-    '''
-reboot()
+    time.sleep(60) #Just in case that api call fails as it sometimes does
+    os.system('curl -X POST --header "Content-Type:application/json" "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"')
+    time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
+    sys.exit() #This forces a container restart anyway
 
 sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
