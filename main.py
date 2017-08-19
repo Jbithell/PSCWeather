@@ -11,9 +11,6 @@ from raven import Client #error reporting
 #Ssetup raven - as a client to sentry.io
 errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
 
-print(str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY')))
-
-
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     global errorclient
@@ -29,6 +26,7 @@ def reboot():
     if requestParsedResponse["Data"] != "OK":
         print(requestParsedResponse["Error"])
 
+reboot()
 sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
 serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
