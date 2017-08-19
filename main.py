@@ -7,6 +7,8 @@ import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
 from raven import Client #error reporting
+from urllib.request import urlopen #reboots
+
 
 #Ssetup raven - as a client to sentry.io
 errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
