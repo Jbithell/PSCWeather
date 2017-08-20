@@ -78,12 +78,12 @@ def looprequest():
         response = response + ser.readline()
     data = {}
     thisresponse = response
-    if (len(thisresponse) < 100):
-        log("[ERROR] Data too short")
-        errorclient.captureMessage("Data too short")
-        errorcount = errorcount + 1
-        return False
-    elif int(response[0]) != 6:
+    #if (len(thisresponse) < 100):
+    #    log("[ERROR] Data too short")
+    #    errorclient.captureMessage("Data too short")
+    #    errorcount = errorcount + 1
+    #    return False
+    if int(response[0]) != 6:
         log("[ERROR] Device failed to respond with ASCII ACK")
         errorclient.captureMessage("No ascii ACK")
         errorcount = errorcount + 1
