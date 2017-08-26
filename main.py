@@ -7,16 +7,9 @@ import urllib.parse #For encoding datainternet
 import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
-from raven import Client #error reporting
-
-
-
-#Ssetup raven - as a client to sentry.io
-errorclient = Client('https://14a0ef31e08949a4a864cdd75e6e944c:6b612136599649608bcdb22b2afcff09@sentry.io/181881')
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
-    global errorclient
     print(message)
 
 
@@ -38,7 +31,6 @@ try:
     ser = serial.Serial(serialport, baudrate, timeout=2)  # Open a serial connection
     ser.isOpen()
 except Exception as e:
-    errorclient.captureException()
     log(e)
     log("[ERROR] Cannot find device in serial port or open a connection")
     if (os.getenv('rebootOnSerialFail', "True") == "True"):
@@ -58,7 +50,6 @@ if ser.readline() == b"\n":
         ser.write(bytes(str("\n"), 'utf8'))
         if ser.readline() == b"\n": #Retry
             log("[ERROR] Error getting connection - rebooting if setting is set")
-            errorclient.captureMessage("[ERROR] Error getting connection - rebooting if setting is set")
             if (os.getenv('rebootOnSerialFail', "True") == "True"):
                 log("[INFO] Rebooting")
                 reboot()  # Reboot the device if cannot connect to serial port - ie have a second attempt
@@ -70,7 +61,7 @@ log("[INFO] Ready to start getting data")
 previousworkingresponse = "" #Global var
 errorcount = 0
 def looprequest():
-    global previousworkingresponse, errorcount, errorclient
+    global previousworkingresponse, errorcount
     #log("[INFO] Sending a loop request")
     ser.write(bytes(str("LOOP 1 \n"), 'utf8')) #Send a request to the data logger
     response = b""
@@ -80,12 +71,10 @@ def looprequest():
     thisresponse = response
     #if (len(thisresponse) < 100):
     #    log("[ERROR] Data too short")
-    #    errorclient.captureMessage("Data too short")
     #    errorcount = errorcount + 1
     #    return False
     if int(response[0]) != 6:
         log("[ERROR] Device failed to respond with ASCII ACK")
-        errorclient.captureMessage("No ascii ACK")
         errorcount = errorcount + 1
         # Didn't respond with an Ascii acknowlegement
         return False
@@ -100,8 +89,6 @@ def looprequest():
         data["consoleBattery"] = round((((int(struct.unpack('<H', response[88:90])[0])*300)/512)/100), 1) #In volts
         data["timestamp"] = round(time.time(),0)
     except Exception as e:
-        errorclient.captureException()
-        errorclient.captureMessage(str(e))
         log("[ERROR] Ignoring data because of error: " + str(e))
         errorcount = errorcount + 1
         return False
@@ -110,23 +97,19 @@ def looprequest():
 
     if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
         log("[INFO] Ignoring data because it's a bit wierd")
-        errorclient.captureMessage("Wierd values")
         return False
     elif data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
-        errorclient.captureMessage("0 wind direction and speed")
         errorcount = errorcount + 1
         return False
     elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255: #This happens when console in setup mode
         log("[ERROR] CONSOLE IN SETUP MENU (Ignoring data because of 255 direction, speed and average)")
         errorcount = errorcount + 1
-        errorclient.captureMessage("Device in Setup Menu")
         return False #Ignore - there's very little we can do remotely :(
     else:
         if (data["wind10MinAverage"] == 255):
             data["wind10MinAverage"] = data["windSpeed"]
             errorcount = errorcount + 1
-            errorclient.captureMessage("Wind 10minute average is 255") #This happens when the device is just starting up and hasn't yet been run for 10 minutes
         previousworkingresponse = thisresponse
         return data
 def storefailedrequest(data): #Cache all the requests that didn't work
@@ -149,7 +132,6 @@ while True:
                 log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
                 #storefailedrequest(data)
         except Exception as e:
-            errorclient.captureException()
             log("[ERROR] Couldn't upload data online " + str(e))
             #storefailedrequest(data)
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
