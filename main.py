@@ -12,6 +12,11 @@ os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     print(message)
 
+if os.environ.get('onlineButDormant', False):
+    while True:
+        #onlineButDormant, if set, makes the device do nothing except log the statement below every 12 hours. To get in/out of this mode, set the env paramater and restart the container
+        time.sleep(43200) #12 Hours
+        log("SleepMode for closure")
 
 def reboot():
     #Use Resin.io api to reboot
