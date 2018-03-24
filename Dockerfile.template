@@ -11,14 +11,13 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
     python3-dev \
     python3-pip \
     python3-tk \
-    python3-setuptools \
+    python3-pip \
     libfreetype6-dev \
     rpl \
     git \
     nano
 
-RUN sudo easy_install3 pip
-RUN pip install --upgrade pip setuptools pyserial pusher
+RUN pip install setuptools pyserial pusher
 #pip also install -         git+https://github.com/resin-io/resin-sdk-python.git
 
 # Set our working directory
