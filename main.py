@@ -7,7 +7,7 @@ import urllib.parse #For encoding datainternet
 import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
-
+import pusher #Pusher.com
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
@@ -59,6 +59,17 @@ if ser.readline() == b"\n":
             else:
                 log("[INFO] Quitting")
 ser.readline() #Read the /r character that follows but ignore it
+
+log("[INFO] Connecting to Pusher")
+pusher_client = pusher.Pusher(
+  app_id=os.environ.get('PUSHERappid'),
+  key=os.environ.get('PUSHERkey'),
+  secret=os.environ.get('PUSHERsecret'),
+  cluster='eu',
+  ssl=True
+)
+log("[INFO] Connected to Pusher")
+
 
 log("[INFO] Ready to start getting data")
 previousworkingresponse = "" #Global var
@@ -115,23 +126,31 @@ def looprequest():
             errorcount = errorcount + 1
         previousworkingresponse = thisresponse
         return data
+lastSentToServerTime = time.time()
 
 while True:
     data = looprequest()
     if data:
+        if time.time()-lastSentToServerTime > os.environ.get('serverSendFrequency', 60): #Send the server a reading every minute
+            try:
+                requestPayload = urllib.parse.urlencode(data).encode("utf-8")
+                requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
+                response = requestResponse.read().decode('utf-8')
+                requestParsedResponse = json.loads(response)
+                if requestParsedResponse["success"] != True:
+                    print(response)
+                    log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
+            except Exception as e:
+                log("[ERROR] Couldn't upload data online " + str(e))
         try:
-            requestPayload = urllib.parse.urlencode(data).encode("utf-8")
-            requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
-            response = requestResponse.read().decode('utf-8')
-            requestParsedResponse = json.loads(response)
-            if requestParsedResponse["success"] != True:
-                print(response)
-                log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
+            pusher_client.trigger('PSCWeatherDataLive', 'PSCWeatherDataLiveNEWReading', {'message': {'reading': data}})
+            log("[SUCCESS] Sent Data to Pusher.com")
         except Exception as e:
-            log("[ERROR] Couldn't upload data online " + str(e))
+            log("[ERROR] Couldn't upload data to Pusher " + str(e))
+
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
-    time.sleep(2)
+    time.sleep(1) #Only take a reading every second
 
 log("[INFO] End of Program")
