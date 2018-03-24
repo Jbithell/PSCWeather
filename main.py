@@ -7,6 +7,7 @@ import urllib.parse #For encoding datainternet
 import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
+import pusher #Pusher.com
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
@@ -26,8 +27,6 @@ def reboot():
     os.system('curl -X POST --header "Content-Type:application/json" "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"')
     time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
     sys.exit() #This forces a container restart anyway
-
-sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
 serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
@@ -60,6 +59,17 @@ if ser.readline() == b"\n":
             else:
                 log("[INFO] Quitting")
 ser.readline() #Read the /r character that follows but ignore it
+
+log("[INFO] Connecting to Pusher")
+pusher_client = pusher.Pusher(
+  app_id=os.environ.get('PUSHERappid'),
+  key=os.environ.get('PUSHERkey'),
+  secret=os.environ.get('PUSHERsecret'),
+  cluster='eu',
+  ssl=True
+)
+log("[INFO] Connected to Pusher")
+
 
 log("[INFO] Ready to start getting data")
 previousworkingresponse = "" #Global var
@@ -116,31 +126,31 @@ def looprequest():
             errorcount = errorcount + 1
         previousworkingresponse = thisresponse
         return data
-def storefailedrequest(data): #Cache all the requests that didn't work
-    global sqliteconn
-    cursor = sqliteconn.cursor()
-    cursor.execute('INSERT INTO `weatherData`(`id`,`timestamp`,`windSpeedMPH`,`windSpeed10MinAverageMPH`,`windDirection`,`temperatureC`,`humidity`,`barometer`) VALUES (NULL,' + str(data["timestamp"]) + ',' + str(data["windSpeed"]) + ',' + str(data["wind10MinAverage"]) + ',' + str(data["windDirection"]) + ',' + str(data["temperatureC"]) + ',' + str(data["humidity"]) + ',' + str(data["barometer"]) + ');')
-    cursor.commit()
-    cursor.close()
+lastSentToServerTime = time.time()
 
 while True:
     data = looprequest()
     if data:
+        if time.time()-lastSentToServerTime > os.environ.get('serverSendFrequency', 60): #Send the server a reading every minute
+            try:
+                requestPayload = urllib.parse.urlencode(data).encode("utf-8")
+                requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
+                response = requestResponse.read().decode('utf-8')
+                requestParsedResponse = json.loads(response)
+                if requestParsedResponse["success"] != True:
+                    print(response)
+                    log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
+            except Exception as e:
+                log("[ERROR] Couldn't upload data online " + str(e))
         try:
-            requestPayload = urllib.parse.urlencode(data).encode("utf-8")
-            requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
-            response = requestResponse.read().decode('utf-8')
-            requestParsedResponse = json.loads(response)
-            if requestParsedResponse["success"] != True:
-                print(response)
-                log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
-                #storefailedrequest(data)
+            pusher_client.trigger('PSCWeatherDataLive', 'PSCWeatherDataLiveNEWReading', {'message': {'reading': data}})
+            log("[SUCCESS] Sent Data to Pusher.com")
         except Exception as e:
-            log("[ERROR] Couldn't upload data online " + str(e))
-            #storefailedrequest(data)
+            log("[ERROR] Couldn't upload data to Pusher " + str(e))
+
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
-    time.sleep(2)
+    time.sleep(1) #Only take a reading every second
 
 log("[INFO] End of Program")
