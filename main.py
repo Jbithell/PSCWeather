@@ -8,6 +8,7 @@ import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
 
+
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     print(message)
@@ -26,8 +27,6 @@ def reboot():
     os.system('curl -X POST --header "Content-Type:application/json" "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"')
     time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
     sys.exit() #This forces a container restart anyway
-
-sqliteconn = sqlite3.connect("/data/weatherdatabase.sqlite3")
 
 serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
@@ -116,12 +115,6 @@ def looprequest():
             errorcount = errorcount + 1
         previousworkingresponse = thisresponse
         return data
-def storefailedrequest(data): #Cache all the requests that didn't work
-    global sqliteconn
-    cursor = sqliteconn.cursor()
-    cursor.execute('INSERT INTO `weatherData`(`id`,`timestamp`,`windSpeedMPH`,`windSpeed10MinAverageMPH`,`windDirection`,`temperatureC`,`humidity`,`barometer`) VALUES (NULL,' + str(data["timestamp"]) + ',' + str(data["windSpeed"]) + ',' + str(data["wind10MinAverage"]) + ',' + str(data["windDirection"]) + ',' + str(data["temperatureC"]) + ',' + str(data["humidity"]) + ',' + str(data["barometer"]) + ');')
-    cursor.commit()
-    cursor.close()
 
 while True:
     data = looprequest()
@@ -134,10 +127,8 @@ while True:
             if requestParsedResponse["success"] != True:
                 print(response)
                 log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
-                #storefailedrequest(data)
         except Exception as e:
             log("[ERROR] Couldn't upload data online " + str(e))
-            #storefailedrequest(data)
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
