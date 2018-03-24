@@ -77,7 +77,7 @@ def looprequest():
     #    log("[ERROR] Data too short")
     #    errorcount = errorcount + 1
     #    return False
-    if int(response[0]) != 6:
+    if (len(response) < 1) or (int(response[0]) != 6):
         log("[ERROR] Device failed to respond with ASCII ACK")
         errorcount = errorcount + 1
         # Didn't respond with an Ascii acknowlegement
