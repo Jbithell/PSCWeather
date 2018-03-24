@@ -13,6 +13,8 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
     python3-tk \
     python3-pip \
     python3-cffi \
+    libssl-dev \
+    libffi-dev \
     libfreetype6-dev \
     rpl \
     git \
