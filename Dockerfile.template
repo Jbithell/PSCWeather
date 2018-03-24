@@ -17,7 +17,8 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
     git \
     nano
 
-RUN pip3 install setuptools pyserial pusher
+RUN pip3 install -U setuptools
+RUN pip3 install pyserial pusher
 #pip also install -         git+https://github.com/resin-io/resin-sdk-python.git
 
 # Set our working directory
