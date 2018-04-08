@@ -139,12 +139,12 @@ while True:
                 request = urllib.request.Request("https://" + str(os.environ.get('uploadUrl', '')) + "?" + str(requestPayload))
                 with urllib.request.urlopen(request) as response:
                     responseText = response.read().decode('utf-8')
-                    print(responseText)
                     requestParsedResponse = json.loads(responseText)
                 if requestParsedResponse["success"] is not True:
                     log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]) + " | " + str(response))
                 else:
                     lastSentToServerTime = time.time()
+                    log("[SUCCESS] Sent Data to WebServer")
             except Exception as e:
                 log("[ERROR] Couldn't upload data online " + str(e))
         try:
