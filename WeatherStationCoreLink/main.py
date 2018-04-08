@@ -121,7 +121,7 @@ def looprequest():
         errorcount = errorcount + 1
         return False #Ignore - there's very little we can do remotely :(
     else:
-        if (data["wind10MinAverage"] == 255):
+        if data["wind10MinAverage"] == 255:
             data["wind10MinAverage"] = data["windSpeed"]
             errorcount = errorcount + 1
         previousworkingresponse = thisresponse
@@ -133,12 +133,13 @@ while True:
     if data:
         if (time.time()-lastSentToServerTime) > int(os.environ.get('serverSendFrequency', 60)): #Send the server a reading every minute
             try:
-                requestPayload = urllib.parse.urlencode(data).encode("utf-8")
-                requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
-                response = requestResponse.read().decode('utf-8')
-                print(response)
-                requestParsedResponse = json.loads(response)
-                if requestParsedResponse["success"] != True:
+                requestPayload = urllib.parse.urlencode(data)
+                requestPayload = requestPayload.encode('ascii')  # data should be bytes
+                request = urllib.request.Request(os.environ.get('uploadUrl', ''), requestPayload)
+                with urllib.request.urlopen(request) as response:
+                    print(response)
+                    requestParsedResponse = json.loads(response)
+                if requestParsedResponse["success"] is not True:
                     log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]) + " | " + str(response))
                 else:
                     lastSentToServerTime = time.time()
@@ -153,6 +154,6 @@ while True:
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
-    time.sleep(1) #Only take a reading every second
+    time.sleep(0.5) #Only take a reading every second
 
 log("[INFO] End of Program")
