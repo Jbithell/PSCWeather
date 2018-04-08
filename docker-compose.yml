@@ -5,10 +5,17 @@ services:
     build: ./WeatherStationCoreLink
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
-    privileged: false
     restart: always
     network_mode: host
     labels:
       io.resin.features.resin-api: '1'
+      io.resin.update.strategy: download-then-kill
+      io.resin.update.handover-timeout: ''
+  internetPowerMonitoring:
+    build: ./InternetAndPowerMonitoring
+    restart: always
+    expose:
+      - "80"
+    labels:
       io.resin.update.strategy: download-then-kill
       io.resin.update.handover-timeout: ''
