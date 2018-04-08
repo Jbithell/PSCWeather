@@ -131,15 +131,16 @@ lastSentToServerTime = time.time()
 while True:
     data = looprequest()
     if data:
-        if time.time()-lastSentToServerTime > os.environ.get('serverSendFrequency', 60): #Send the server a reading every minute
+        if (time.time()-lastSentToServerTime) > int(os.environ.get('serverSendFrequency', 60)): #Send the server a reading every minute
             try:
                 requestPayload = urllib.parse.urlencode(data).encode("utf-8")
                 requestResponse = urllib.request.urlopen(os.environ.get('uploadUrl', ''), requestPayload)
                 response = requestResponse.read().decode('utf-8')
                 requestParsedResponse = json.loads(response)
                 if requestParsedResponse["success"] != True:
-                    print(response)
-                    log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]))
+                    log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]) + " | " + str(response))
+                else:
+                    lastSentToServerTime = time.time()
             except Exception as e:
                 log("[ERROR] Couldn't upload data online " + str(e))
         try:
