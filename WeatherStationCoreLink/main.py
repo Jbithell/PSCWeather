@@ -138,7 +138,7 @@ while True:
                 requestPayload = urllib.parse.urlencode(data)
                 requestPayload = requestPayload.encode('ascii')  # data should be bytes
                 print(requestPayload)
-                request = urllib.request.Request(os.environ.get('uploadUrl', ''), requestPayload)
+                request = urllib.request.Request(os.environ.get('uploadUrl', '') + str("?test=123"), requestPayload)
                 with urllib.request.urlopen(request) as response:
                     responseText = response.read()
                     print(responseText)
@@ -158,6 +158,6 @@ while True:
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
-    time.sleep(0.5) #Only take a reading every second
+    time.sleep(0.5) #Only take a reading every half second
 
 log("[INFO] End of Program")
