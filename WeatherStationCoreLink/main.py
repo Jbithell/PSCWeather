@@ -108,7 +108,7 @@ def looprequest():
         data["timestamp"] = round(time.time(),0)
 
         windSpeeds[str(int(round(time.time())))] = data["windSpeed"] #add this data point to the gust speeds list
-        data["wind10MinGust"] = max(windSpeeds, key=windSpeeds.get)
+        data["wind10MinGust"] = max(windSpeeds.values()) #Return the largest value in the dictionary
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         errorcount = errorcount + 1
