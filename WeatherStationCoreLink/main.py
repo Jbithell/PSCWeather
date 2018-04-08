@@ -107,7 +107,7 @@ def looprequest():
         data["consoleBattery"] = round((((int(struct.unpack('<H', response[88:90])[0])*300)/512)/100), 1) #In volts
         data["timestamp"] = round(time.time(),0)
 
-        windSpeeds[str(round(time.time(),0))] = data["windSpeed"] #add this data point to the gust speeds list
+        windSpeeds[str(int(round(time.time())))] = data["windSpeed"] #add this data point to the gust speeds list
         data["wind10MinGust"] = max(windSpeeds, key=windSpeeds.get)
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
