@@ -12,4 +12,4 @@ RUN pip install Flask==0.10.1
 COPY . ./
 
 # main.py will run when container starts up on the device
-CMD ["python","src/main.py"]
+CMD ["python","main.py"]
