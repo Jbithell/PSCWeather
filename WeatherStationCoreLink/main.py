@@ -126,7 +126,9 @@ def looprequest():
             errorcount = errorcount + 1
         previousworkingresponse = thisresponse
         return data
-lastSentToServerTime = time.time()
+
+
+lastSentToServerTime = 0  # Make a request immediately
 
 while True:
     data = looprequest()
