@@ -94,7 +94,7 @@ def looprequest():
         return False
 
     for key, value in windSpeeds.items(): #Remove items that are older than 5 minutes from the list of gust speeds
-        if key < (time.time()-300):
+        if int(key) < (time.time()-300):
             del windSpeeds[key]
     try:
         data["temperatureRaw"] = struct.unpack('<H', response[13:15])[0]  # In degrees F multiplied by 10
