@@ -140,7 +140,7 @@ while True:
                 print(requestPayload)
                 request = urllib.request.Request(os.environ.get('uploadUrl', '') + str("?test=123"), requestPayload)
                 with urllib.request.urlopen(request) as response:
-                    responseText = response.read()
+                    responseText = response.read().decode('utf-8')
                     print(responseText)
                     requestParsedResponse = json.loads(responseText)
                 if requestParsedResponse["success"] is not True:
