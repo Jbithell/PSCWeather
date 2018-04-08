@@ -136,10 +136,8 @@ while True:
         if (time.time()-lastSentToServerTime) > int(os.environ.get('serverSendFrequency', 60)): #Send the server a reading every minute
             try:
                 requestPayload = urllib.parse.urlencode(data)
-                requestPayload = requestPayload.encode('ascii')  # data should be bytes
-                print(requestPayload)
-                request = urllib.request.Request(os.environ.get('uploadUrl', ''), requestPayload)
-                with urllib.request.urlopen(request, requestPayload) as response:
+                request = urllib.request.Request(os.environ.get('uploadUrl', '') + "?" + str(requestPayload))
+                with urllib.request.urlopen(request) as response:
                     responseText = response.read().decode('utf-8')
                     print(responseText)
                     requestParsedResponse = json.loads(responseText)
