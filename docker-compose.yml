@@ -13,9 +13,6 @@ services:
       io.resin.update.handover-timeout: ''
   internetPowerMonitoring:
     build: ./InternetAndPowerMonitoring
-    restart: always
     expose:
       - "80"
-    labels:
-      io.resin.update.strategy: download-then-kill
-      io.resin.update.handover-timeout: ''
+    restart: always
