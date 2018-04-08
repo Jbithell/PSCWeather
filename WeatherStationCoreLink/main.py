@@ -137,6 +137,7 @@ while True:
             try:
                 requestPayload = urllib.parse.urlencode(data)
                 requestPayload = requestPayload.encode('ascii')  # data should be bytes
+                print(requestPayload)
                 request = urllib.request.Request(os.environ.get('uploadUrl', ''), requestPayload)
                 with urllib.request.urlopen(request) as response:
                     responseText = response.read()
