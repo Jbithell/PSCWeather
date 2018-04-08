@@ -138,8 +138,8 @@ while True:
                 requestPayload = urllib.parse.urlencode(data)
                 requestPayload = requestPayload.encode('ascii')  # data should be bytes
                 print(requestPayload)
-                request = urllib.request.Request(os.environ.get('uploadUrl', '') + str("?test=123"), requestPayload)
-                with urllib.request.urlopen(request) as response:
+                request = urllib.request.Request(os.environ.get('uploadUrl', ''), requestPayload)
+                with urllib.request.urlopen(request, requestPayload) as response:
                     responseText = response.read().decode('utf-8')
                     print(responseText)
                     requestParsedResponse = json.loads(responseText)
