@@ -74,9 +74,9 @@ log("[INFO] Connected to Pusher")
 log("[INFO] Ready to start getting data")
 previousworkingresponse = "" #Global var
 errorcount = 0
+windSpeeds = {} #Format: timestamp:windSpeedAtThatInstant
 def looprequest():
-    global previousworkingresponse, errorcount
-    #log("[INFO] Sending a loop request")
+    global previousworkingresponse, errorcount, windSpeeds
     ser.write(bytes(str("LOOP 1 \n"), 'utf8')) #Send a request to the data logger
     response = b""
     for i in range(4):
@@ -92,6 +92,10 @@ def looprequest():
         errorcount = errorcount + 1
         # Didn't respond with an Ascii acknowlegement
         return False
+
+    for key, value in windSpeeds.items(): #Remove items that are older than 5 minutes from the list of gust speeds
+        if key < (time.time()-300):
+            del windSpeeds[key]
     try:
         data["temperatureRaw"] = struct.unpack('<H', response[13:15])[0]  # In degrees F multiplied by 10
         data["temperatureC"] = round((((int(data["temperatureRaw"])/10)-32)*(5/9)), 1) #Converted into C into 1 dp
@@ -102,6 +106,9 @@ def looprequest():
         data["humidity"] = response[34] # Outside - %
         data["consoleBattery"] = round((((int(struct.unpack('<H', response[88:90])[0])*300)/512)/100), 1) #In volts
         data["timestamp"] = round(time.time(),0)
+
+        windSpeeds[str(round(time.time(),0))] = data["windSpeed"] #add this data point to the gust speeds list
+        data["wind10MinGust"] = max(windSpeeds, key=windSpeeds.get)
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         errorcount = errorcount + 1
