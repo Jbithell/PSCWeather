@@ -28,7 +28,7 @@ def reboot():
     time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
     sys.exit() #This forces a container restart anyway
 
-serialport = os.environ.get('serialPort', '/dev/ttyUSB0')
+serialport = "/dev/ttyUSB0"
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
 try:
     ser = serial.Serial(serialport, baudrate, timeout=2)  # Open a serial connection
