@@ -14,5 +14,5 @@ services:
   internetPowerMonitoring:
     build: ./InternetAndPowerMonitoring
     expose:
-      - "80"
+      - "80:80"
     restart: always
