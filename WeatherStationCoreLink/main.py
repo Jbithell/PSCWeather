@@ -138,6 +138,7 @@ while True:
                 response = requestResponse.read().decode('utf-8')
                 requestParsedResponse = json.loads(response)
                 if requestParsedResponse["success"] != True:
+                    print(data)
                     log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]) + " | " + str(response))
                 else:
                     lastSentToServerTime = time.time()
