@@ -93,7 +93,7 @@ def looprequest():
         # Didn't respond with an Ascii acknowlegement
         return False
 
-    for key, value in windSpeeds.items(): #Remove items that are older than 5 minutes from the list of gust speeds
+    for key in list(windSpeeds.keys()): #Remove items that are older than 5 minutes from the list of gust speeds
         if int(key) < (time.time()-300):
             del windSpeeds[key]
     try:
