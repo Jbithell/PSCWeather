@@ -159,6 +159,7 @@ while True:
             log("[SUCCESS] Sent Data to Pusher.com")
         except Exception as e:
             log("[ERROR] Couldn't upload data to Pusher " + str(e))
+            reboot()
 
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
