@@ -22,9 +22,10 @@ def reboot():
     #Use Resin.io api to reboot
     log("Rebooting")
     rebooturl = str(os.environ.get('RESIN_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('RESIN_SUPERVISOR_API_KEY'))
-    os.system('curl -X POST --header "Content-Type:application/json" "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"')
+    log(rebooturl)
+    os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
     time.sleep(60) #Just in case that api call fails as it sometimes does
-    os.system('curl -X POST --header "Content-Type:application/json" "$RESIN_SUPERVISOR_ADDRESS/v1/reboot?apikey=$RESIN_SUPERVISOR_API_KEY"')
+    os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
     time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
     sys.exit() #This forces a container restart anyway
 
