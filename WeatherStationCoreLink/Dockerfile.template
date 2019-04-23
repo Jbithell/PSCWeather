@@ -2,7 +2,6 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
 
  RUN apt-get update && apt-get install -yq \
     libpng-dev \
-    libffi-dev \
     libfreetype6-dev \
     pkg-config \
     build-essential \
@@ -23,7 +22,7 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
 
 RUN pip3 install -U setuptools
 RUN pip3 install cffi
-RUN pip3 install cairocffi
+RUN pip3 install cairocffi==0.6
 RUN pip3 install pyserial pusher
 #pip also install -         git+https://github.com/resin-io/resin-sdk-python.git
 
