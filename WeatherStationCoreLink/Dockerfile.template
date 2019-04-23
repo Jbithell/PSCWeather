@@ -2,6 +2,7 @@ FROM resin/%%RESIN_MACHINE_NAME%%-debian
 
  RUN apt-get update && apt-get install -yq \
     libpng-dev \
+    libffi-dev \
     libfreetype6-dev \
     pkg-config \
     build-essential \
