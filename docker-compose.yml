@@ -8,9 +8,7 @@ services:
     restart: always
     network_mode: host
     labels:
-      io.resin.features.resin-api: '1'
-      io.resin.update.strategy: download-then-kill
-      io.resin.update.handover-timeout: ''
+      io.balena.features.supervisor-api: '1'
   internetPowerMonitoring:
     build: ./InternetAndPowerMonitoring
     ports:
