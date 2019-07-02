@@ -22,7 +22,6 @@ def reboot():
     #Use Resin.io api to reboot
     log("Rebooting")
     rebooturl = str(os.environ.get('BALENA_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('BALENA_SUPERVISOR_API_KEY'))
-    log(rebooturl)
     os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
     time.sleep(60) #Just in case that api call fails as it sometimes does
     os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
