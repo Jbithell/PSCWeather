@@ -27,7 +27,7 @@ def reboot():
     os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
     time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
     reboot()
-    return False
+    return False #basically put itself into a loop
 
 serialport = "/dev/ttyUSB0"
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
