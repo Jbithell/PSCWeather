@@ -9,8 +9,6 @@ import urllib.request #For internet
 import json #To parse response
 import sqlite3 #Database
 import pusher #Pusher.com
-from balena import Balena #rebooting
-balena = Balena()
 
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
@@ -24,17 +22,14 @@ while os.environ.get('onlineButDormant', False) == "True":
 def reboot():
     #Use Resin.io api to reboot
     log("Rebooting")
-    rebootResult = balena.models.supervisor.reboot()
-    log(rebootResult)
-    if rebootResult['DATA'] != 'OK':
-        log("Reboot Failed")
-    else:
-        log("Reboot worked")
-    time.sleep(43200)
+    rebooturl = str(os.environ.get('BALENA_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('BALENA_SUPERVISOR_API_KEY'))
+    try:
+        os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
+        time.sleep(43200)
+    except:
+        time.sleep(600) #Just in case that api call fails as it sometimes does
+        reboot()
     return False #basically put itself into a loop
-
-time.sleep(120)
-reboot()
 
 serialport = "/dev/ttyUSB0"
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
