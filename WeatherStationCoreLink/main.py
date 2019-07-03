@@ -25,12 +25,12 @@ def reboot():
     #Use Resin.io api to reboot
     log("Rebooting")
     rebootResult = balena.models.supervisor.reboot()
-	log(rebootResult)
-	if rebootResult['DATA'] != 'OK':
-	    log("Reboot Failed")
-	else:
-		log("Reboot worked")
-	time.sleep(43200)
+    log(rebootResult)
+    if rebootResult['DATA'] != 'OK':
+        log("Reboot Failed")
+    else:
+        log("Reboot worked")
+    time.sleep(43200)
     return False #basically put itself into a loop
 
 time.sleep(120)
