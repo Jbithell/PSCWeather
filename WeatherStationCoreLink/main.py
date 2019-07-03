@@ -1,5 +1,6 @@
 import os
 import sys #To kill app
+import subprocess #To read if it was killed
 import serial
 import time #For time.sleep
 import struct #To merge two bytes in an integer
@@ -22,12 +23,16 @@ def reboot():
     #Use Resin.io api to reboot
     log("Rebooting")
     rebooturl = str(os.environ.get('BALENA_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('BALENA_SUPERVISOR_API_KEY'))
-    os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
-    time.sleep(60) #Just in case that api call fails as it sometimes does
-    os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
-    time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
-    reboot()
+    result = subprocess.check_output('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"', shell=True)
+    log(result)
+    #time.sleep(60) #Just in case that api call fails as it sometimes does
+    #os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
+    #time.sleep(60)  # Just in case that api call fails AGAIN as it sometimes does
+    #reboot()
     return False #basically put itself into a loop
+time.sleep(300)
+reboot()
+
 
 serialport = "/dev/ttyUSB0"
 baudrate = os.environ.get('baudRate', 19200) #Set the Baudrate to 19200 which is a nice default for the davis logger
