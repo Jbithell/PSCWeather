@@ -25,7 +25,8 @@ def reboot():
     rebooturl = str(os.environ.get('BALENA_SUPERVISOR_ADDRESS')) + '/v1/reboot?apikey=' + str(os.environ.get('BALENA_SUPERVISOR_API_KEY'))
     try:
         os.system('curl -X POST --header "Content-Type:application/json" "' + rebooturl + '"')
-        time.sleep(43200)
+        time.sleep(600)
+		reboot() #Clerly it's not restarted by now so we'll try again
     except:
         time.sleep(600) #Just in case that api call fails as it sometimes does
         reboot()
