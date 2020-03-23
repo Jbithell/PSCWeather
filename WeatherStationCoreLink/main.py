@@ -63,7 +63,7 @@ if ser.readline() == b"\n":
             else:
                 log("[INFO] Quitting")
 ser.readline() #Read the /r character that follows but ignore it
-ser.write(bytes(str("BAUD 19200"), "utf8"))
+ser.write(bytes(str("BAUD 19200 \n"), "utf8"))
 log(ser.readline())
 
 log("[INFO] Connecting to Pusher")
