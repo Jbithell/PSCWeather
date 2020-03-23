@@ -63,6 +63,8 @@ if ser.readline() == b"\n":
             else:
                 log("[INFO] Quitting")
 ser.readline() #Read the /r character that follows but ignore it
+ser.write(bytes(str("BAUD 19200"), "utf8"))
+log(ser.readline())
 
 log("[INFO] Connecting to Pusher")
 pusher_client = pusher.Pusher(
@@ -121,6 +123,10 @@ def looprequest():
     #print(str(chr(response[1])) + str(chr(response[2])) + str(chr(response[3]))) #Should be LOO
 
     if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
+        log(data["windSpeed"])
+        log(data['temperatureC'])
+        log(data['humidity'])
+        log(data['windDirection'])
         log("[INFO] Ignoring data because it's a bit wierd")
         return False
     elif data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
