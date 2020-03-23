@@ -121,22 +121,18 @@ def looprequest():
         return False
 
     #print(str(chr(response[1])) + str(chr(response[2])) + str(chr(response[3]))) #Should be LOO
-
-    if data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
-        log(data["windSpeed"])
-        log(data['temperatureC'])
-        log(data['humidity'])
-        log(data['windDirection'])
-        log("[INFO] Ignoring data because it's a bit wierd")
+    if data["windSpeed"] == 255 and data["humidity"] == 255:  # This happens when console in setup mode
+        log("[ERROR] CONSOLE IN SETUP MENU OR STATION DISCONNECTED (Ignoring data because of 255 speed and humidity)")
+        time.sleep(30) #Wait 30 seconds in an attempt to stop it being spammed over the winter
+        errorcount = errorcount + 1
+        return False  # Ignore - there's very little we can do remotely :(
+    elif data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
+        log("[INFO] Ignoring data because it's a bit weird")
         return False
     elif data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
         log("[INFO] Ignoring data because of 0 wind direction and speed")
         errorcount = errorcount + 1
         return False
-    elif data["windSpeed"] == 255 and data["wind10MinAverage"] == 255: #This happens when console in setup mode
-        log("[ERROR] CONSOLE IN SETUP MENU (Ignoring data because of 255 direction, speed and average)")
-        errorcount = errorcount + 1
-        return False #Ignore - there's very little we can do remotely :(
     else:
         if data["wind10MinAverage"] == 255:
             data["wind10MinAverage"] = data["windSpeed"]
