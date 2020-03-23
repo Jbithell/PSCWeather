@@ -146,20 +146,8 @@ lastSentToServerTime = 0  # Make a request immediately
 while True:
     data = looprequest()
     if data:
-        if (time.time()-lastSentToServerTime) > int(os.environ.get('serverSendFrequency', 60)): #Send the server a reading every minute
-            try:
-                requestPayload = urllib.parse.urlencode(data)
-                request = urllib.request.Request("https://" + str(os.environ.get('uploadUrl', '')) + "?" + str(requestPayload))
-                with urllib.request.urlopen(request) as response:
-                    responseText = response.read().decode('utf-8')
-                    requestParsedResponse = json.loads(responseText)
-                if requestParsedResponse["success"] is not True:
-                    log("[ERROR] Couldn't upload the data online - server rejected with " + str(requestParsedResponse["message"]) + " | " + str(response))
-                else:
-                    lastSentToServerTime = time.time()
-                    log("[SUCCESS] Sent Data to WebServer")
-            except Exception as e:
-                log("[ERROR] Couldn't upload data online " + str(e))
+        #if (time.time()-lastSentToServerTime) > int(os.environ.get('serverSendFrequency', 60)): #Send the server a reading every minute
+        #Not currently uploading anything to any servers because it makes more sense to go serverless
         try:
             pusher_client.trigger('PSCWeatherDataLive', 'PSCWeatherDataLiveNEWReading', {'message': {'reading': data}})
             log("[SUCCESS] Sent Data to Pusher.com")
