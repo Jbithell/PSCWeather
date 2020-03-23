@@ -174,6 +174,6 @@ while True:
     if errorcount > 5: #If it's hit an error more than 5 times just reboot it
         reboot()
 
-    time.sleep(0.5) #Only take a reading every half second
+    time.sleep(2) #Only take a reading every two seconds as the device itself only updates on roughly that frequency
 
 log("[INFO] End of Program")
