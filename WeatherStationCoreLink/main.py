@@ -10,6 +10,13 @@ import json #To parse response
 import sqlite3 #Database
 import pusher #Pusher.com
 
+import sentry_sdk
+from sentry_sdk import capture_message
+sentry_sdk.init(
+    "https://examplePublicKey@o0.ingest.sentry.io/0",
+    traces_sample_rate=1.0,
+)
+
 os.environ['TZ'] = 'Europe/London' #SetTimezone
 def log(message):
     print(message)
@@ -127,6 +134,8 @@ def looprequest():
         errorcount = errorcount + 1
         return False  # Ignore - there's very little we can do remotely :(
     elif data["windSpeed"] > 80 or data["temperatureC"] > 50 or data["humidity"] > 100 or data["windDirection"] > 360:
+        capture_message(repr(data))
+        capture_message(response.decode("utf-8"))
         log("[INFO] Ignoring data because it's a bit weird")
         return False
     elif data["windSpeed"] == 0 and data["windDirection"] == 0: #This indicates it's struggling for data so ignore
