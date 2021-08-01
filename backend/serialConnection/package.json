@@ -1,6 +1,10 @@
 {
+  "scripts": {
+    "start": "node ./src/main.js"
+  },
   "dependencies": {
-    "@serialport/parser-readline": "^9.0.7",
-    "serialport": "^9.2.0"
+    "@serialport/parser-delimiter": "^9.0.7",
+    "serialport": "^9.2.0",
+    "winston": "^3.3.3"
   }
 }

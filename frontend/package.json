@@ -17,6 +17,8 @@
     "lint": "eslint src/**/*.js"
   },
   "dependencies": {
+    "@popperjs/core": "^2.9.2",
+    "bootstrap": "^5.0.2",
     "gatsby": "^3.10.2",
     "gatsby-plugin-manifest": "^3.10.0",
     "gatsby-plugin-react-helmet": "^4.10.0",

@@ -1,12 +1,12 @@
-version: '2.1'
-volumes:
-    resin-data:
+version: "2.1"
 services:
-  serialConnectoin:
+  serialConnection:
     build: ./serialConnection
     restart: unless-stopped
     privileged: true
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     labels:
-      - io.balena.features.supervisor-api: '1'
+      io.balena.features.supervisor-api: "1"
+    environment:
+      DATABASE: "/data/sqlite/data.sqlite"

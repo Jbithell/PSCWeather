@@ -26,18 +26,7 @@ def looprequest():
         if int(key) < (time.time()-300):
             del windSpeeds[key]
     try:
-        data["temperatureRaw"] = struct.unpack('<H', response[13:15])[0]  # In degrees F multiplied by 10
-        data["temperatureC"] = round((((int(data["temperatureRaw"])/10)-32)*(5/9)), 1) #Converted into C into 1 dp
-        data["windSpeed"] = response[15] #In mph
-        data["wind10MinAverage"] = response[16] #In mph - and average of the last 10 minutes
-        data["windDirection"] = struct.unpack('<H', response[17:19])[0] #In degrees
-        data["barometer"] = struct.unpack('<H', response[8:10])[0]  # Hg/1000
-        data["humidity"] = response[34] # Outside - %
-        data["consoleBattery"] = round((((int(struct.unpack('<H', response[88:90])[0])*300)/512)/100), 1) #In volts
-        data["timestamp"] = round(time.time(),0)
-
-        windSpeeds[str(int(round(time.time())))] = data["windSpeed"] #add this data point to the gust speeds list
-        data["wind10MinGust"] = max(windSpeeds.values()) #Return the largest value in the dictionary
+        
     except Exception as e:
         log("[ERROR] Ignoring data because of error: " + str(e))
         errorcount = errorcount + 1
