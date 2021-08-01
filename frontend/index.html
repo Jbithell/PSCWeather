@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Porthmadog Sailing Club Weather">
+    <meta name="author" content="James Bithell">
+    <title>Porthmadog Sailing Club - Weather Station</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/webicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/webicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/webicons/favicon-16x16.png">
+    <link rel="manifest" href="assets/img/webicons/manifest.json">
+    <link rel="mask-icon" href="assets/img/webicons/safari-pinned-tab.svg" color="#000000">
+    <link rel="shortcut icon" href="assets/img/webicons/favicon.ico">
+    <meta name="msapplication-config" content="assets/img/webicons/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src="assets/jquery.min.js"></script>
+    <link rel="stylesheet" href="assets/bootstrap.min.css"/>
+    <script type="text/javascript" src="assets/bootstrap.min.js"></script>
+    <!--Bootbox-->
+    <script src="assets/bootbox.min.js"></script>
+    <!-- Custom Fonts -->
+    <link rel="stylesheet" href="assets/font-awesome/css/font-awesome.min.css"/>
+    <!--Gauage-->
+    <script src="assets/gauge.min.js"></script>
+    <!--Main Script-->
+    <link rel="stylesheet" href="assets/style.css"/>
+    <!--Pace JS-->
+    <link rel="stylesheet" href="assets/pace-theme-minimal.css" />
+    <script data-pace-options='{ "ajax": true }' src='assets/pace.min.js'></script>
+    <!--Pusher-->
+    <script src="assets/pusher.min.js"></script>
+
+    <style>
+        /* This stuff isn't in the stylesheet as there were issues with relative paths */
+        body {
+            background-image: url("assets/img/background-compressed.jpg");
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center bottom;
+        }
+        .datadisplay {
+            display: none;
+        }
+    </style>
+    <script src="assets/config.js"></script>
+    <script src="assets/functions.js"></script>
+    <script src="assets/main.js"></script>
+    <script>if (window.module) module = window.module;</script>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron" style="opacity: 0.8; margin-top: 25px; text-align: center;">
+        <div class="row">
+            <div class="col-lg-10 col-lg-offset-1">
+                <h2 class="hiddenElectron">Porthmadog Sailing Club Weather Station</h2>
+            </div>
+        </div>
+        <div class="row datadisplay" id="maindisplayrow">
+            <div class="col-md-2 col-sm-4 guagedivcol">
+                <canvas data-type="radial-gauge"
+                        data-units="Direction"
+                        data-min-value="0"
+                        data-max-value="360"
+                        data-major-ticks="N,NE,E,SE,S,SW,W,NW,N"
+                        data-minor-ticks="22"
+                        data-ticks-angle="360"
+                        data-start-angle="180"
+                        data-stroke-ticks="false"
+                        data-color-plate="#eee"
+                        data-color-needle="rgba(255, 0, 0, 1)"
+                        data-color-needle-end="rgba(255, 0, 0, 0.9)"
+                        data-value-box="false"
+                        data-value-text-shadow="false"
+                        data-needle-circle-size="15"
+                        data-needle-circle-outer="false"
+                        data-animation-rule="linear"
+                        data-needle-type="line"
+                        data-needle-start="75"
+                        data-needle-end="99"
+                        data-needle-width="3"
+                        data-borders="false"
+                        data-needle-type="arrow"
+                        data-animation-duration="500"
+                        data-highlights='[{"from": 225, "to": 22.5, "color": "rgba(255, 133, 26, 0.4)"}]'
+
+                        data-width="1"
+                        data-height="1"
+                        id="winddirectiongauge"
+
+                ></canvas>
+            </div>
+            <div class="col-md-2 col-sm-4 guagedivcol">
+                <canvas data-type="radial-gauge"
+                        data-units="Wind Speed (mph)"
+                        data-min-value="0"
+                        data-max-value="30"
+                        data-major-ticks="0,5,10,15,20,25,30"
+                        data-minor-ticks="5"
+                        data-stroke-ticks="true"
+                        data-highlights='[{"from": 25, "to": 30, "color": "rgba(255, 0, 0, .75)"},{"from": 20, "to": 25, "color": "rgba(255, 133, 26, 0.75)"},{"from": 5, "to": 20, "color": "rgba(0, 255, 0, 0.75)"}]'
+                        data-color-plate="#eee"
+                        data-border-shadow-width="0"
+                        data-borders="false"
+                        data-needle-type="arrow"
+                        data-needle-width="2"
+                        data-needle-circle-size="7"
+                        data-needle-circle-outer="true"
+                        data-needle-circle-inner="false"
+                        data-animation-duration="500"
+                        data-animation-rule="linear"
+                        data-value-dec="0"
+                        data-value-box="2"
+
+                        data-width="1"
+                        data-height="1"
+
+                        id="windgauge"
+                ></canvas>
+            </div>
+            <div class="col-md-2 col-sm-4 guagedivcol">
+                <canvas data-type="radial-gauge"
+                        data-units="Wind Gust (mph)"
+                        data-min-value="0"
+                        data-max-value="30"
+                        data-major-ticks="0,5,10,15,20,25,30"
+                        data-minor-ticks="5"
+                        data-stroke-ticks="true"
+                        data-highlights='[{"from": 25, "to": 30, "color": "rgba(255, 0, 0, .75)"},{"from": 20, "to": 25, "color": "rgba(255, 133, 26, 0.75)"},{"from": 5, "to": 20, "color": "rgba(0, 255, 0, 0.75)"}]'
+                        data-color-plate="#eee"
+                        data-border-shadow-width="0"
+                        data-borders="false"
+                        data-needle-type="arrow"
+                        data-needle-width="2"
+                        data-needle-circle-size="7"
+                        data-needle-circle-outer="true"
+                        data-needle-circle-inner="false"
+                        data-animation-duration="500"
+                        data-animation-rule="linear"
+                        data-value-dec="0"
+                        data-value-box="2"
+
+                        data-width="1"
+                        data-height="1"
+
+                        id="windgustgauge"
+                ></canvas>
+            </div>
+            <div class="col-md-2 col-sm-4 guagedivcol">
+                <canvas data-type="radial-gauge"
+                        data-units="Wind Average (mph)"
+                        data-min-value="0"
+                        data-max-value="30"
+                        data-major-ticks="0,5,10,15,20,25,30"
+                        data-minor-ticks="5"
+                        data-stroke-ticks="true"
+                        data-highlights='[{"from": 25, "to": 30, "color": "rgba(255, 0, 0, .75)"},{"from": 20, "to": 25, "color": "rgba(255, 133, 26, 0.75)"},{"from": 5, "to": 20, "color": "rgba(0, 255, 0, 0.75)"}]'
+                        data-color-plate="#eee"
+                        data-border-shadow-width="0"
+                        data-borders="false"
+                        data-needle-type="arrow"
+                        data-needle-width="2"
+                        data-needle-circle-size="7"
+                        data-needle-circle-outer="true"
+                        data-needle-circle-inner="false"
+                        data-animation-duration="500"
+                        data-animation-rule="linear"
+                        data-value-dec="0"
+                        data-value-box="2"
+
+                        data-width="1"
+                        data-height="1"
+
+                        id="windaveragegauge"
+                ></canvas>
+            </div>
+            <div class="col-md-2 col-sm-4 guagedivcol">
+                <canvas data-type="radial-gauge"
+                        data-units="°C"
+                        data-title="Temperature"
+                        data-min-value="0"
+                        data-max-value="30"
+                        data-major-ticks="[0,10,20,30]"
+                        data-minor-ticks="10"
+                        data-stroke-ticks="true"
+                        data-highlights='[ {"from": 0, "to": 5, "color": "rgba(255,0, 0, .75)"},{"from": 25, "to": 30, "color": "rgba(255, 0, 0, .75)"} ]'
+                        data-color-plate="#eee"
+                        data-border-shadow-width="0"
+                        data-borders="false"
+                        data-needle-type="arrow"
+                        data-needle-width="2"
+                        data-needle-circle-size="7"
+                        data-needle-circle-outer="true"
+                        data-needle-circle-inner="false"
+                        data-animation-duration="500"
+                        data-animation-rule="linear"
+                        data-color-needle-shadow-down="#333"
+                        data-color-needle-circle-outer="#333"
+                        data-color-needle-circle-outer-end="#111"
+                        data-color-needle-circle-inner="#111"
+                        data-color-needle-circle-inner-end="#222"
+                        data-value-box="false"
+
+                        data-width="1"
+                        data-height="1"
+
+                        id="tempgauge"
+                ></canvas>
+            </div>
+            <div class="col-md-2 col-sm-4 guagedivcol">
+                <canvas data-type="radial-gauge"
+                        data-units="Humidity (%)"
+                        data-min-value="60"
+                        data-max-value="100"
+                        data-major-ticks="60,70,80,90,100"
+                        data-minor-ticks="10"
+                        data-stroke-ticks="true"
+                        data-highlights='[ {"from": 60, "to": 70, "color": "rgba(255, 133, 26, .75)"},{"from": 90, "to": 100, "color": "rgba(255, 133, 26, .75)"} ]'
+                        data-color-plate="#eee"
+                        data-border-shadow-width="0"
+                        data-borders="false"
+                        data-value-box="false"
+                        data-needle-type="arrow"
+                        data-needle-width="2"
+                        data-needle-circle-size="7"
+                        data-needle-circle-outer="true"
+                        data-needle-circle-inner="false"
+                        data-animation-duration="500"
+                        data-animation-rule="linear"
+                        data-value="80"
+
+                        data-width="1"
+                        data-height="1"
+
+                        id="humiditygauge"
+                ></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div id="chart_div"></div>
+            </div>
+        </div>
+        <div class="row ">
+            <div class="col-lg-12 datadisplay" style="text-align: right;">
+                <div id="lastupdateDiv" style="font-style: italic;"><span id="lastupdate"></span><span id="connectionstatus"></span></div>
+            </div>
+            <div class="col-lg-12 hiddenElectron" style="text-align: center; margin-top: 20px;">
+                <a href="https://port-tides.com" target="_blank" class="btn btn-default"><i class="fa fa-moon-o"></i> Tide Times</a>
+                <a href="https://www.metoffice.gov.uk/public/weather/forecast/gcmj194pc" target="_blank" class="btn btn-default"><i class="fa fa-cloud"></i> Weather Forecast</a>
+                <button data-toggle="modal" data-target="#aboutwindmodal" id="dataInfoModalShowButton" class="btn btn-default"><i class="fa fa-table"></i> Data Information</button>
+                <button data-toggle="modal" data-target="#aboutmodal" id="aboutModalShowButton" class="btn btn-default"><i class="fa fa-info-circle"></i> About</button>
+                <h4 style="margin-top: 15px;">
+                    <a class="hidden-xs hidden-sm" href="http://sailing-club.org" target="_blank">Porthmadog Sailing
+                        Club, The Harbour, Porthmadog, Gwynedd, LL49 9AY</a><a href="?" class="hidden-xs hidden-sm"> |
+                    Site </a>&copy;2017-2020 <a href="https://www.jbithell.com">James Bithell</a>
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+<!--<div id="downloadmodal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><i class="fa fa-cloud-download"></i> Data Download</h4>
+            </div>
+            <div class="modal-body">
+                <p>The complete data since the system began reliable operation is available in Google Drive, spread across multiple spreadsheets each in chronological order.</p>
+                <a href="https://drive.google.com/drive/folders/0B7kDaoYqsogNanNTdmE1RlV5NHc" target="_blank"><button type="button" class="btn btn-default"><i class="fa fa-google"></i> Google Drive Folder</button></a>
+
+            </div>
+            <div class="modal-footer" style="padding: 0px;">
+                <table class="table table-striped table-bordered" style="margin-bottom: 0px; text-align: left;">
+                    <tr>
+                        <td>Timestamp</td>
+                        <td>dd/mm/yyyy hh:mm:ss</td>
+                    </tr>
+                    <tr>
+                        <td>Speed</td>
+                        <td>The current wind speed in MPH</td>
+                    </tr>
+                    <tr>
+                        <td>Direction</td>
+                        <td>Wind direction to the nearest degree</td>
+                    </tr>
+                    <tr>
+                        <td>Temp&nbsp;°C</td>
+                        <td>Temperature outside in Degrees Centigrade</td>
+                    </tr>
+                    <tr>
+                        <td>Humidity&nbsp;%</td>
+                        <td>Humidity outside as a percentage</td>
+                    </tr>
+
+                    <tr>
+                        <td>Barometer</td>
+                        <td><i>Feature currently not in use</i></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><b>Data is provided without warranty.</b></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>-->
+<div id="aboutmodal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">About</h4>
+            </div>
+            <div class="modal-body">
+                <p>The system tracks weather in the Porthmadog estury using a Davis Vantage Vue and a Raspberry Pi</p>
+                <p>The developer would like to thank Alan Butler for his support and installation of the Davis device</p>
+                <p>Originally Developed in May 2017 by James Bithell</p>
+            </div>
+            <div class="modal-footer">
+                <a href="https://github.com/jbithell/PSCWeatherStation" class="btn btn-default" target="_blank"><i class="fa fa-github" aria-hidden="true"></i> Github</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="aboutwindmodal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Information</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+
+                </p>
+                <p>
+                    The weather station is situated at the Sailing Club’s Race Hut. As its position is sheltered in some wind directions the readings should be viewed with caution. With winds from SW through East to NE accurate readings may be expected though with winds WSW through West to NNE the readings are likely to be substantially lower and winds much stronger than indicated are likely both beyond the Powder House and towards Portmeirion.                 </p>
+                <p>
+                    This service is provided without warranty, and neither the sailing club or the developer of this site can be held responsible for any inaccuracies in this data, or incidents that may result from them.
+                </p>
+            </div>
+            <div class="modal-footer" style="padding: 0px;"><!--DUPLICATED IN OTHER MODAL-->
+                <table class="table table-striped table-bordered" style="margin-bottom: 0px; text-align: left;">
+                    <tr>
+                        <td>Temp&nbsp;°C</td>
+                        <td>Temperature outside in Degrees Centigrade</td>
+                    </tr>
+                    <tr>
+                        <td>Humidity&nbsp;%</td>
+                        <td>Humidity outside as a percentage</td>
+                    </tr>
+                    <tr>
+                        <td>Gust</td>
+                        <td>The highest recorded wind speed in the last 5 minutes in MPH</td>
+                    </tr>
+                    <tr>
+                        <td>Average</td>
+                        <td>The average wind speed from the last 10 minutes (from the weather station itself) in MPH</td>
+                    </tr>
+                    <tr>
+                        <td>Speed</td>
+                        <td>The current wind speed in MPH</td>
+                    </tr>
+                    <tr>
+                        <td>Direction</td>
+                        <td>Wind direction on a compass, to the nearest 10 degrees</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--JBITHELL.COM FLEET UPTIME TRACKING-->
+<!--62gW2d5ct2J78j69f8Wcvv452NeqEkvBe8R64kRA3K39t3GBGj-->
+<!--END JBITHELL.COM FLEET UPTIME TRACKING-->
+<script>
+    var userAgent = navigator.userAgent.toLowerCase();
+    if (userAgent.indexOf(' electron/') < -1) { //Don't track Google Analytics in Electron
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-26373319-6', 'auto');
+        ga('send', 'pageview');
+
+    }
+</script>
+</body>
+</html>
