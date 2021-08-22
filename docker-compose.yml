@@ -1,7 +1,7 @@
 version: "2.1"
 services:
-  serialConnection:
-    build: ./serialConnection
+  weather:
+    build: .
     restart: unless-stopped
     privileged: true
     devices:
