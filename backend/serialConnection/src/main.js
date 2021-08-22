@@ -46,7 +46,11 @@ parser.on('data', function(message) {
     notHeadFromDevice = false
     querySerial() // Trigger the first query, function then starts calling itself
   }
-  console.log(responseParser(message))
+  const response = responseParser(message)
+  if (response) {
+    logger.log("debug","Received parsed weather data", response)
+    //TODO upload data
+  }
 })
 
 

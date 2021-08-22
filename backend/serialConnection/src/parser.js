@@ -5,7 +5,7 @@ const logger = require("./logger")
  */
 const parser = (inputBuffer) => {
   let offset = false
-  if (inputBuffer.length < 94) {
+  if (inputBuffer.length < 40) {
     logger.log("warn",`Buffer received too short - length is ${inputBuffer.length}`,inputBuffer)
     return false
   }
@@ -16,7 +16,7 @@ const parser = (inputBuffer) => {
     }
   }
   if (!offset) { 
-    logger.log("warn","Buffer received doesn't start with LOO (76,79,79)",inputBuffer)
+    logger.log("warn","Buffer received doesn't contain LOO (76,79,79)",inputBuffer)
     return false
   } else {
     logger.log("debug",`This offset is ${offset}`)
@@ -38,7 +38,14 @@ const parser = (inputBuffer) => {
   if (data.windDirection < 1 || data.windDirection > 360) {
     logger.log("warn","Wind direction out of range")
     return false
+  } else if (data.windSpeed == 255 && data.humidity == 255) {
+    logger.log("warn","Wind speed and humidity are 255 - console is in setup mode")
+    return false
+  } else if (data.windSpeed > 150 || data.temperatureC > 60 || data.humidity > 100) {
+    logger.log("warn","Data is weird - wind speed/temperature/humidity are too high")
+    return false
+  } else {
+    return data
   }
-  return data
 }
 module.exports = parser
