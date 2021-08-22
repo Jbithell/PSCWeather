@@ -9,4 +9,6 @@ COPY package-lock.json ./package-lock.json
 RUN npm ci --only=production
 
 COPY src/ ./
+
+ENV NODE_ENV=production
 CMD ["node", "/usr/src/app/main.js"]

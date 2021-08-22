@@ -1,10 +1,5 @@
 name: balenapush
 on:
-  push:
-    # Temporarily deploy v4 as well
-    # TODO remove this
-    branches:
-      - v4
   create:
     tags:
       - v*
