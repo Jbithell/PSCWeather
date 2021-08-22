@@ -9,4 +9,4 @@ services:
     labels:
       io.balena.features.supervisor-api: "1"
     environment:
-      DATABASE: "/data/sqlite/data.sqlite"
+      LOG_LEVEL: "info"
