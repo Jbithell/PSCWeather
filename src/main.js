@@ -53,7 +53,7 @@ parser.on('data', function(message) {
   if (response) {
     logger.log("debug","Received parsed weather data", response)
     windy(response)
-    windGuru(response)
+    windguru(response)
   }
 })
 
