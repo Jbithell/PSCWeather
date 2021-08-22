@@ -1,0 +1,16 @@
+name: balenapush
+on:
+  create:
+    tags:
+      - v*
+jobs:
+  balenapush:
+    name: Push to Balena.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: npm install balena-cli -g --production --unsafe-perm
+      - run: balena login --token ${secrets.BALENA_API_TOKEN}
+      - run: balena push ${secrets.BALENA_APPLICATION_NAME}
+        working-directory: ./backend

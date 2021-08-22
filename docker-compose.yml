@@ -1,16 +1,10 @@
-version: '2.1'
-networks: {}
+version: "2.1"
 services:
-  weatherStationCoreLink:
-    build: ./WeatherStationCoreLink
+  weather:
+    build: .
+    restart: unless-stopped
+    privileged: true
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
-    restart: always
-    network_mode: host
     labels:
-      io.balena.features.supervisor-api: '1'
-  internetPowerMonitoring:
-    build: ./InternetAndPowerMonitoring
-    ports:
-      - "80:80"
-    restart: always
+      io.balena.features.supervisor-api: "1"
