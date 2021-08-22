@@ -1,5 +1,5 @@
 const axios = require('axios')
-const logger = require("./logger")
+const logger = require("./../logger")
 const crypto = require("crypto")
 const makeString = (length) => {
   var result           = '';
