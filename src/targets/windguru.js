@@ -17,7 +17,7 @@ const windguru = (weatherData) => {
   axios({
     method: 'get',
     url: 'https://www.windguru.cz/upload/api.php',
-    data: {
+    params: {
       uid:process.env.WINDGURU_UID, // (required)	UID of your station = unique string you chose during station registration
       //interval:"", //measurement interval in seconds (60 would mean you are sending 1 minute measurements), then the wind_avg / wind_max / wind_min values should be values valid for this past interval
       wind_avg: (weatherData.windSpeed/1.151), //average wind speed during interval (knots)
@@ -36,10 +36,10 @@ const windguru = (weatherData) => {
     responseType: 'text',
   })
   .then(function (response) {
-    logger.log("http", "Sent request to Windy", response)
+    logger.log("http", "Sent request to windguru", response.data)
   })
   .catch(function (error) {
-    logger.log("error", "Error from Windy", error)
+    logger.log("error", "Error from windguru", error.data)
   })
 }
 module.exports = windguru

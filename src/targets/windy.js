@@ -4,7 +4,7 @@ const windy = (weatherData) => {
   axios({
     method: 'get',
     url: `https://stations.windy.com/pws/update/${process.env.WINDY_API_KEY}`,
-    data: {
+    params: {
       station:process.env.WINDY_STATION_ID, // 32 bit integer; required for multiple stations; default value 0; alternative names: si, stationId
       ts:Math.floor(new Date().getTime()), // unix timestamp [s] or [ms]
       temp:weatherData.temperatureC, // real number [°C]; air temperature
@@ -26,10 +26,10 @@ const windy = (weatherData) => {
     responseType: 'text',
   })
   .then(function (response) {
-    logger.log("http", "Sent request to windguru", response)
+    logger.log("http", "Sent request to windy", response.data)
   })
   .catch(function (error) {
-    logger.log("error", "Error from windguru", error)
+    logger.log("error", "Error from windy", error.data)
   })
 }
 module.exports = windy
