@@ -8,5 +8,3 @@ services:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     labels:
       io.balena.features.supervisor-api: "1"
-    environment:
-      LOG_LEVEL: "info"

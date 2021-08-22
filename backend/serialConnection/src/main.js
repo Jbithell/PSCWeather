@@ -3,6 +3,9 @@ const Delimiter = require('@serialport/parser-delimiter')
 const logger = require("./logger")
 const responseParser = require("./parser")
 const sleep = require("./sleep")
+const windy = require("./targets/windy")
+const windguru = require("./targets/windguru")
+
 logger.log("info","Booted - connecting to Serial")
 /**
  * Setup the serial connection
@@ -36,7 +39,7 @@ function querySerial() {
   }).then(() => {
     return serialWrite("LPS 2 1") //Send the loop command
   }).then(() => {
-    return sleep(5000) // Wait 5 seconds as the data isn't that exciting
+    return sleep(30000) // Wait 30 seconds as the data isn't that exciting
   }).then(() => {
     querySerial() //Request again
   })
@@ -49,7 +52,8 @@ parser.on('data', function(message) {
   const response = responseParser(message)
   if (response) {
     logger.log("debug","Received parsed weather data", response)
-    //TODO upload data
+    windy(response)
+    windGuru(response)
   }
 })
 
