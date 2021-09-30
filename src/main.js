@@ -2,6 +2,7 @@ const SerialPort = require('serialport')
 const Delimiter = require('@serialport/parser-delimiter')
 const logger = require("./logger")
 const responseParser = require("./parser")
+const responseValidator = require("./validator")
 const sleep = require("./sleep")
 const windy = require("./targets/windy")
 const windguru = require("./targets/windguru")
@@ -44,17 +45,43 @@ function querySerial() {
     querySerial() //Request again
   })
 }
+/***
+ * Cache the serial connection as the messages can come through from the device in chunks
+ */
+let serialCache = { 
+  "cache": Buffer.from([]),
+  "updated": Date.now()
+}
+function cacheSerial(message) { //Build up a bit of a cache of serial messages because they seem to come in chunks
+  if (serialCache["updated"] < (Date.now() - 65000)) { //If the cache is older than 65 seconds
+    serialCache["cache"] = Buffer.from([]) //Reset the cache
+  }
+  serialCache["updated"] = Date.now()
+  serialCache["cache"] = Buffer.concat([serialCache["cache"],message]) //Add the new message to the cache
+
+  let offset = responseValidator(serialCache["cache"]) //Check if the cache is a complete message
+  if (offset !== false) { // If we have a full message then parse it, otherwise wait and let the cache build up a bit
+    const response = responseParser(serialCache["cache"], offset) //Parse the message
+    serialCache = { //Reset the serialCache
+      "cache": Buffer.from([]),
+      "updated": Date.now()
+    }
+    if (response) {
+      logger.log("debug","Received parsed weather data", response)
+      windy(response) // Send the data to windy
+      windguru(response) // Send the data to windguru
+    }
+  }
+}
+/**
+ * Handle messages from the device
+ */
 parser.on('data', function(message) {
   if (notHeadFromDevice) {
     notHeadFromDevice = false
     querySerial() // Trigger the first query, function then starts calling itself
   }
-  const response = responseParser(message)
-  if (response) {
-    logger.log("debug","Received parsed weather data", response)
-    windy(response)
-    windguru(response)
-  }
+  cacheSerial(message)
 })
 
 

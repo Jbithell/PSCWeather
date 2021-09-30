@@ -3,25 +3,7 @@ const logger = require("./logger")
  * Script to parse a buffer of the format "loop" and turn it into to an object
  * @param {Buffer} inputBuffer
  */
-const parser = (inputBuffer) => {
-  let offset = false
-  if (inputBuffer.length < 40) {
-    logger.log("warn",`Buffer received too short - length is ${inputBuffer.length}`,inputBuffer)
-    return false
-  }
-  for (let thisOffset = 0; thisOffset < (inputBuffer.length-3); thisOffset++) {
-    if (inputBuffer.slice(thisOffset,thisOffset+3).toString('utf8') === "LOO") {
-      offset = thisOffset
-      break
-    }
-  }
-  if (!offset) { 
-    logger.log("warn","Buffer received doesn't contain LOO (76,79,79)",inputBuffer)
-    return false
-  } else {
-    logger.log("debug",`This offset is ${offset}`)
-  }
-  
+const parser = (inputBuffer, offset) => {
   const data = {
     temperatureRaw: inputBuffer.readUInt16LE(offset+12), // In degrees F multiplied by 10
     windDirection: inputBuffer.readUInt16LE(offset+16), //In degrees

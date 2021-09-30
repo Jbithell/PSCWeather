@@ -1,4 +1,5 @@
 {
+  "name": "PSCWeather",
   "scripts": {
     "start": "node ./src/main.js"
   },
