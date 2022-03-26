@@ -18,7 +18,7 @@ const parser = (inputBuffer, offset) => {
   data.temperatureF = (data.temperatureRaw / 10).toFixed(1) // Temperature in degrees F
   data.temperatureC = (((data.temperatureRaw/10) - 32)*(5/9)).toFixed(1) // Temperature in degrees C
   if (data.windDirection < 1 || data.windDirection > 360) {
-    logger.log("warn","Wind direction out of range")
+    logger.log("warn","Wind direction out of range", data)
     return false
   } else if (data.windSpeed == 255 && data.humidity == 255) {
     logger.log("warn","Wind speed and humidity are 255 - console is in setup mode")

@@ -54,6 +54,7 @@ let serialCache = {
 }
 function cacheSerial(message) { //Build up a bit of a cache of serial messages because they seem to come in chunks
   if (serialCache["updated"] < (Date.now() - 65000)) { //If the cache is older than 65 seconds
+    logger.log("warn","Resetting cache (out of date)", serialCache)
     serialCache["cache"] = Buffer.from([]) //Reset the cache
   }
   serialCache["updated"] = Date.now()
