@@ -10,7 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
-      - run: npm install balena-cli -g --production --unsafe-perm
+        with:
+          node-version: '12'
+          cache: 'npm'
+      - run: npm install balena-cli@13.3.* -g --production --unsafe-perm
       - run: balena login --token ${secrets.BALENA_API_TOKEN}
       - run: balena push ${secrets.BALENA_APPLICATION_NAME}
         working-directory: ./backend
