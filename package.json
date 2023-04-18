@@ -6,7 +6,7 @@
   "license": "MIT",
   "dependencies": {
     "@serialport/parser-delimiter": "^9.0.7",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "serialport": "^9.2.0",
     "winston": "^3.3.3"
   }
