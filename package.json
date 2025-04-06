@@ -5,9 +5,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@serialport/parser-delimiter": "^9.0.7",
-    "axios": "^0.21.1",
-    "serialport": "^9.2.0",
-    "winston": "^3.3.3"
+    "@serialport/parser-delimiter": "9.2.4",
+    "serialport": "9.2.8",
+    "winston": "^3.17.0"
   }
 }

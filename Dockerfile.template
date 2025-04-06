@@ -1,14 +1,23 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-node:15.10-buster
+# Use a base image with Node.js 22 for the appropriate architecture
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-node:22
 
+# Install required packages
 RUN install_packages gcc g++ python3 udev build-essential
 ENV UDEV=1
 
+# Set the working directory
 WORKDIR /usr/src/app
+
+# Copy package files and install dependencies
 COPY package.json ./package.json
 COPY package-lock.json ./package-lock.json
 RUN npm ci --only=production
 
+# Copy the source code
 COPY src/ ./
 
+# Set the environment to production
 ENV NODE_ENV=production
+
+# Define the default command
 CMD ["node", "/usr/src/app/main.js"]

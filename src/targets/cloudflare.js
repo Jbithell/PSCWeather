@@ -1,22 +1,28 @@
-const axios = require("axios");
 const logger = require("../logger");
+
+// Function to send weather data to Cloudflare
 const cloudflare = (weatherData) => {
   if (!process.env.CLOUDFLARE_API_URL) return;
 
-  axios({
-    method: "get",
-    url: process.env.CLOUDFLARE_API_URL,
-    params: {
-      weatherData,
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
+
+  fetch(process.env.CLOUDFLARE_API_URL, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
     },
-    timeout: 2000,
-    responseType: "text",
+    body: JSON.stringify(weatherData),
+    signal: controller.signal,
   })
-    .then(function (response) {
-      logger.log("http", "Sent request to cloudflare", response.data);
+    .then((response) => response.text())
+    .then((data) => {
+      clearTimeout(timeout);
+      logger.log("http", "Sent request to cloudflare", data);
     })
-    .catch(function (error) {
-      logger.log("error", "Error from cloudflare", error.data);
+    .catch((error) => {
+      logger.log("error", "Error from cloudflare", error.message);
     });
 };
+
 module.exports = cloudflare;
