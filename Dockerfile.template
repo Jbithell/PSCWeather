@@ -1,5 +1,5 @@
-# Use a base image with Node.js 22 for the appropriate architecture
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-node:22
+# Use a base image with Node.js 20 for the appropriate architecture
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian-node:20
 
 # Install required packages
 RUN install_packages gcc g++ python3 udev build-essential
