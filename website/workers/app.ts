@@ -71,6 +71,11 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           schema,
           logger: drizzleLogger,
         });
+        console.log(
+          "Attempting to insert",
+          event.payload,
+          typeof event.payload.timestamp
+        );
         const insert = await db
           .insert(schema.Observations)
           .values(event.payload)
