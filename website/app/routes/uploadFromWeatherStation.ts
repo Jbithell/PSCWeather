@@ -50,7 +50,7 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
     return data(
       {
         error: "Error in data packet from weather station",
-        errors: errors.formErrors,
+        errors,
       },
       { status: 400 }
     );
