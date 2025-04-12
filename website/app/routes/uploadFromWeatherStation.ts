@@ -6,6 +6,15 @@ import {
 import type { Route } from "./+types/uploadFromWeatherStation";
 
 export async function action({ request, context, params }: Route.LoaderArgs) {
+  if (request.method !== "PUT" || !request.body) {
+    return data(
+      {
+        error: "Invalid request method or empty body",
+      },
+      { status: 400 }
+    );
+  }
+
   const uploadSecret = await context.cloudflare.env.KV.get(
     "UPLOAD_FROM_WEATHER_STATION_SECRET"
   );
@@ -24,7 +33,11 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
   );
   if (!validatedFormData.success) {
     const errors = validatedFormData.error.flatten();
-    console.log("Error in data packet from weather station", errors);
+    console.log(
+      "Error in data packet from weather station",
+      request.body,
+      errors
+    );
     return data(
       {
         error: "Error in data packet from weather station",
