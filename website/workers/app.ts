@@ -135,7 +135,11 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           {
             method: "GET",
           }
-        ).then((response) => response.text());
+        ).then((response) => {
+          if (!response.ok)
+            throw new Error("Windguru failed, status: " + response.status);
+          return response.text();
+        });
         if (response !== "OK") {
           throw new Error(`Windguru upload failed: ${response}`);
         }
@@ -178,13 +182,14 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           {
             method: "GET",
           }
-        ).then((response) => response.json());
-        if (
-          !response ||
-          typeof response !== "object" ||
-          Object.keys(response).length !== 0
-        )
+        ).then((response) => {
+          if (!response.ok)
+            throw new Error("Windy upload failed, status: " + response.status);
+          return response.json();
+        });
+        if (!response || typeof response !== "object")
           throw new Error(`Windy upload failed: ${JSON.stringify(response)}`);
+        return JSON.stringify(response);
       }
     );
     await step.do(
@@ -231,7 +236,13 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           {
             method: "GET",
           }
-        ).then((response) => response.json());
+        ).then((response) => {
+          if (!response.ok)
+            throw new Error(
+              "Met Office upload failed, status: " + response.status
+            );
+          return response.json();
+        });
         if (
           !response ||
           typeof response !== "object" ||
