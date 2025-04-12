@@ -4,7 +4,7 @@ import {
   WorkflowStep,
 } from "cloudflare:workers";
 import { NonRetryableError } from "cloudflare:workflows";
-import { and, gte, lt } from "drizzle-orm";
+import { and, asc, gte, lt } from "drizzle-orm";
 import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { createRequestHandler } from "react-router";
 import type { ZodError } from "zod";
@@ -408,14 +408,22 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
                 calculatedDate.nextDayAtMidnight
               )
             )
-          );
-        const header = Object.keys(schema.Observations).join(",");
+          )
+          .orderBy(asc(schema.Observations.timestamp));
+        if (allObservations.length === 0) return;
+        const header = [
+          "Timestamp",
+          Object.keys(allObservations[0].data).map((key) => `"${key}"`),
+        ].join(",");
         const csv = [
           header,
           ...allObservations.map((observation) =>
-            Object.values(observation)
-              .map((value) => `"${value}"`)
-              .join(",")
+            [
+              observation.timestamp.toTimeString(),
+              Object.values(observation.data)
+                .map((value) => `"${value}"`)
+                .join(","),
+            ].join(",")
           ),
         ].join("\n");
         await this.env.R2_BUCKET.put(
