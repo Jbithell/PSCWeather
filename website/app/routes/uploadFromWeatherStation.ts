@@ -2,7 +2,6 @@ import { data } from "react-router";
 import {
   observationFromWeatherStation,
   observationInsertSchema,
-  Observations,
 } from "../../database/schema.d";
 import type { Route } from "./+types/uploadFromWeatherStation";
 
@@ -85,14 +84,22 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
     });
   } else {
     // The data is valid, so we need to insert it into the database
-    const workflowInstance =
-      await context.cloudflare.env.WORKFLOW_HANDLE_RECEIVED_OBSERVATION.create({
+    await context.cloudflare.env.WORKFLOW_UPLOAD_RECEIVED_OBSERVATION_TO_DB.create(
+      {
         params: fullValidation.data,
-      });
-    const workflowStatus = await workflowInstance.status();
+      }
+    );
+    await context.cloudflare.env.WORKFLOW_UPLOAD_TO_METOFFICE.create({
+      params: fullValidation.data,
+    });
+    await context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDGURU.create({
+      params: fullValidation.data,
+    });
+    await context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDY.create({
+      params: fullValidation.data,
+    });
     return data({
       message: "Observation received",
-      status: workflowStatus.status,
     });
   }
 }

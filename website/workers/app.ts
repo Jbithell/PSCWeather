@@ -47,7 +47,7 @@ export default {
   },
 } satisfies ExportedHandler<Env>;
 
-export class HandleReceivedObservation extends WorkflowEntrypoint<
+export class UploadReceivedObservation extends WorkflowEntrypoint<
   Env,
   schema.ObservationInsert
 > {
@@ -55,7 +55,7 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
     event: WorkflowEvent<schema.ObservationInsert>,
     step: WorkflowStep
   ) {
-    const upload = await step.do(
+    await step.do(
       "Upload incoming data into database",
       {
         retries: {
@@ -88,6 +88,17 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
         };
       }
     );
+  }
+}
+
+export class UploadToWindGuru extends WorkflowEntrypoint<
+  Env,
+  schema.ObservationInsert
+> {
+  async run(
+    event: WorkflowEvent<schema.ObservationInsert>,
+    step: WorkflowStep
+  ) {
     await step.do(
       "Upload to WindGuru",
       {
@@ -144,6 +155,17 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
         }
       }
     );
+  }
+}
+
+export class UploadToMetOffice extends WorkflowEntrypoint<
+  Env,
+  schema.ObservationInsert
+> {
+  async run(
+    event: WorkflowEvent<schema.ObservationInsert>,
+    step: WorkflowStep
+  ) {
     await step.do(
       "Upload to Met Office",
       {
@@ -209,6 +231,17 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           );
       }
     );
+  }
+}
+
+export class UploadToWindy extends WorkflowEntrypoint<
+  Env,
+  schema.ObservationInsert
+> {
+  async run(
+    event: WorkflowEvent<schema.ObservationInsert>,
+    step: WorkflowStep
+  ) {
     await step.do(
       "Upload to Windy",
       {
