@@ -1,0 +1,9 @@
+/assets/*
+  Access-Control-Allow-Origin: *
+  Cache-control: public, max-age=31536000, immutable
+
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:project.workers.dev/*
+  X-Robots-Tag: noindex

@@ -1,0 +1,41 @@
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+name: Deploy production to Cloudflare Workers & Migrate DB
+jobs:
+  deploy:
+    defaults:
+      run:
+        working-directory: ./website
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm install
+      - name: Set Wrangler environment to production
+        run: echo "CLOUDFLARE_ENV=production" >> $GITHUB_ENV
+      - name: Build
+        run: npm run build
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.9.0"
+          packageManager: npm
+          command: deploy
+          workingDirectory: "website"
+          postCommands: |
+            echo "*** Running D1 Migrations ***"
+            wrangler d1 migrations apply DB --remote
+            echo "******"
