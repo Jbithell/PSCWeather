@@ -18,17 +18,17 @@
   ],
   "workflows": [
     {
-      "name": "handle-received-observation",
+      "name": "PSCWeather: Handle Received Observation",
       "binding": "WORKFLOW_HANDLE_RECEIVED_OBSERVATION",
       "class_name": "HandleReceivedObservation"
     },
     {
-      "name": "disregard-received-observation",
+      "name": "PSCWeather: Disregard Received Observation",
       "binding": "WORKFLOW_HANDLE_DISREGARD_OBSERVATION",
       "class_name": "DisregardReceivedObservation"
     },
     {
-      "name": "overnight-save-to-r2",
+      "name": "PSCWeather: Save to R2 Overnight",
       "binding": "WORKFLOW_OVERNIGHT_SAVE_TO_R2",
       "class_name": "OvernightSaveToR2"
     }

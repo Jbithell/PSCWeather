@@ -2,6 +2,7 @@ import { data } from "react-router";
 import {
   observationFromWeatherStation,
   observationInsertSchema,
+  Observations,
 } from "../../database/schema.d";
 import type { Route } from "./+types/uploadFromWeatherStation";
 
@@ -23,6 +24,7 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
       { status: 400 }
     );
   }
+  console.debug("Received data from weather station", requestBody);
 
   const uploadSecret = await context.cloudflare.env.KV.get(
     "UPLOAD_FROM_WEATHER_STATION_SECRET"

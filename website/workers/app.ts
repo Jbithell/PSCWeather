@@ -58,6 +58,14 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
   ) {
     const upload = await step.do(
       "Upload incoming data into database",
+      {
+        retries: {
+          limit: 30,
+          delay: 5000,
+          backoff: "exponential",
+        },
+        timeout: "2 seconds",
+      },
       async () => {
         const db = drizzle(this.env.DB, {
           schema,
