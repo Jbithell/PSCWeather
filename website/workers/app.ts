@@ -56,6 +56,19 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
     event: WorkflowEvent<schema.ObservationInsert>,
     step: WorkflowStep
   ) {
+    const timestamp = await step.do("Log timestamp", async () => {
+      console.log(
+        "Attempting to log",
+        event.payload,
+        typeof event.payload.timestamp
+      );
+      return {
+        timestamp: typeof event.payload.timestamp,
+        time: event.payload.timestamp,
+        timestampAsDate: new Date(event.payload.timestamp),
+        timestampAsDateType: typeof new Date(event.payload.timestamp),
+      };
+    });
     const upload = await step.do(
       "Upload incoming data into database",
       {
