@@ -35,6 +35,5 @@ jobs:
           workingDirectory: "website"
           postCommands: |
             echo "*** Running D1 Migrations ***"
-            ls -l
             wrangler d1 migrations apply DB --remote
             echo "******"

@@ -4,8 +4,6 @@ const logger = require("./logger");
 const responseParser = require("./parser");
 const responseValidator = require("./validator");
 const sleep = require("./sleep");
-const windy = require("./targets/windy");
-const windguru = require("./targets/windguru");
 const cloudflare = require("./targets/cloudflare");
 
 logger.log("info", "Booted - connecting to Serial");
@@ -88,10 +86,6 @@ function cacheSerial(message) {
     if (response) {
       logger.log("debug", "Received parsed weather data", response);
       cloudflare(response); // Send the data to cloudflare, whether its valid or not
-      if (response.disregardReason === "") {
-        windy(response); // Send the data to windy
-        windguru(response); // Send the data to windguru
-      }
     }
   }
 }
