@@ -21,11 +21,12 @@ const observationDataSchema = z.object({
   windDirection: z.coerce.number().gt(0).lte(360),
   wind10MinAverage: z.coerce.number().gte(0).lte(200), // mph
   wind2MinAverage: z.coerce.number().gte(0).lte(200), // mph
-  //windGust: z.coerce.number().gte(0).lte(200), // mph
-  //windGustDirection: z.coerce.number().gt(0).lte(360),
+  windGust: z.coerce.number(), //.gte(0).lte(200), // mph
+  windGustDirection: z.coerce.number(), //.gt(0).lte(360),
   dewPoint: z.coerce.number().gt(-460).lt(150), // Fahrenheit
-  rainRate: z.coerce.number().positive(), // Clicks per hour (0.2mm or 0.01in)
+  //rainRate: z.coerce.number().positive(), // Clicks per hour (0.2mm or 0.01in)
   uv: z.coerce.number(), // UV Index
+  humidity: z.coerce.number().gte(0).lte(100),
   solarRadiation: z.coerce.number(), // watt/meter^2
   last15MinRain: z.coerce.number(), // Clicks per 15 minutes (0.2mm or 0.01in)
   lastHourRain: z.coerce.number(), // Clicks per hour (0.2mm or 0.01in)
@@ -39,11 +40,12 @@ export const observationFromWeatherStation = z.object({
   windDirection: z.coerce.number(),
   wind10MinAverage: z.coerce.number(),
   wind2MinAverage: z.coerce.number(),
-  //windGust: z.coerce.number(),
-  //windGustDirection: z.coerce.number(),
+  windGust: z.coerce.number(),
+  windGustDirection: z.coerce.number(),
   dewPoint: z.coerce.number(),
-  rainRate: z.coerce.number(),
+  //rainRate: z.coerce.number(),
   uv: z.coerce.number(),
+  humidity: z.coerce.number(),
   solarRadiation: z.coerce.number(),
   last15MinRain: z.coerce.number(),
   lastHourRain: z.coerce.number(),

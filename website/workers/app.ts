@@ -130,16 +130,12 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
             .map((b) => b.toString(16).padStart(2, "0"))
             .join(""),
         });
-        await fetch(
+        return await fetch(
           `https://www.windguru.cz/upload/api.php?${params.toString()}`,
           {
             method: "GET",
           }
-        )
-          .then((response) => response.text())
-          .then((data) => {
-            console.log("Sent request successfully to windguru", data);
-          });
+        ).then((response) => response.text());
       }
     );
     await step.do(
@@ -172,19 +168,15 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           winddir: data.data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
           //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
           dewpoint: data.data.dewPoint.toString(), // real number [°C];
-          rainin: (data.data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
+          precip: data.data.lastHourRain.toString(), // real number [mm]; precipitation over the past hour
           uv: data.data.uv.toString(), //number [index];
         });
-        await fetch(
+        return await fetch(
           `https://stations.windy.com/pws/update/${WINDY_API_KEY}?${params.toString()}`,
           {
             method: "GET",
           }
-        )
-          .then((response) => response.text())
-          .then((data) => {
-            console.log("Sent request successfully to windguru", data);
-          });
+        ).then((response) => response.text());
       }
     );
     await step.do(
@@ -218,7 +210,7 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
             .replace("T", "+")
             .replace(/:/g, "%3A")
             .split(".")[0],
-          dailyrainin: (data.data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
+          dailyrainin: (data.data.lastHourRain * 0.0393701).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
           dewptf: data.data.dewPoint.toString(),
           tempf: data.data.temperatureF.toString(), // real number [°F]; air temperature
           windspeedmph: data.data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
@@ -226,16 +218,12 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
           //windgustdir: data.data.windGustDirection.toString(), // integer number [deg]; instantaneous wind direction
         });
-        await fetch(
+        return await fetch(
           `http://wow.metoffice.gov.uk/automaticreading?${params.toString()}`,
           {
             method: "GET",
           }
-        )
-          .then((response) => response.text())
-          .then((data) => {
-            console.log("Sent request successfully to windguru", data);
-          });
+        ).then((response) => response.text());
       }
     );
   }

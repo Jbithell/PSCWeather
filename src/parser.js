@@ -16,7 +16,7 @@ const parser = (inputBuffer, offset) => {
     windGustDirection: (inputBuffer.readUInt16LE(offset + 24) / 10).toFixed(1), // in MPH - gust of the last 10 minutes
     dewPoint: inputBuffer.readInt16LE(offset + 30), // In Degrees F (255 = unavailable)
     humidity: inputBuffer.readUInt8(offset + 33), // in %
-    rainRate: (inputBuffer.readUInt16LE(offset + 34) * 0.2).toFixed(1), // in mm/hour
+    rainRate: (inputBuffer.readUInt16LE(offset + 34) * 0.2).toFixed(1), // in mm
     uv: inputBuffer.readUInt8(offset + 43), // UV index
     solarRadiation: inputBuffer.readUInt16LE(offset + 44), // in W/m2
     last15MinRain: (inputBuffer.readUInt16LE(offset + 52) * 0.2).toFixed(1), // in mm
