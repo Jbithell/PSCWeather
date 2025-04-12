@@ -383,7 +383,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
         ].join("\n");
         await this.env.R2_BUCKET.put(
           `daily-observations/${calculatedDate.previousDayAtMidnight.getFullYear()}-${calculatedDate.previousDayAtMidnight.getMonth()}-${calculatedDate.previousDayAtMidnight.getDate()}.csv`,
-          csv 
+          csv
         );
       }
     );
