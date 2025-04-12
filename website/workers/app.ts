@@ -130,12 +130,15 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
             .map((b) => b.toString(16).padStart(2, "0"))
             .join(""),
         });
-        return await fetch(
+        const response = await fetch(
           `https://www.windguru.cz/upload/api.php?${params.toString()}`,
           {
             method: "GET",
           }
         ).then((response) => response.text());
+        if (response !== "OK") {
+          throw new Error(`Windguru upload failed: ${response}`);
+        }
       }
     );
     await step.do(
@@ -169,14 +172,19 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
           dewpoint: data.data.dewPoint.toString(), // real number [°C];
           precip: data.data.lastHourRain.toString(), // real number [mm]; precipitation over the past hour
-          uv: data.data.uv.toString(), //number [index];
         });
-        return await fetch(
+        const response = await fetch(
           `https://stations.windy.com/pws/update/${WINDY_API_KEY}?${params.toString()}`,
           {
             method: "GET",
           }
-        ).then((response) => response.text());
+        ).then((response) => response.json());
+        if (
+          !response ||
+          typeof response !== "object" ||
+          Object.keys(response).length !== 0
+        )
+          throw new Error(`Windy upload failed: ${JSON.stringify(response)}`);
       }
     );
     await step.do(
@@ -218,12 +226,20 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
           //windgustdir: data.data.windGustDirection.toString(), // integer number [deg]; instantaneous wind direction
         });
-        return await fetch(
+        const response = await fetch(
           `http://wow.metoffice.gov.uk/automaticreading?${params.toString()}`,
           {
             method: "GET",
           }
-        ).then((response) => response.text());
+        ).then((response) => response.json());
+        if (
+          !response ||
+          typeof response !== "object" ||
+          Object.keys(response).length !== 0
+        )
+          throw new Error(
+            `Met Office upload failed: ${JSON.stringify(response)}`
+          );
       }
     );
   }
