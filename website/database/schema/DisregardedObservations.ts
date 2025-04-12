@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const DisregardedObservations = sqliteTable("DisregardedObservations", {
+export const DisregardedObservations = sqliteTable("disregarded_observations", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(), // Time of the actual observation
   createdAt: integer("created_at", { mode: "timestamp" })

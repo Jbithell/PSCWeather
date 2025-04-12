@@ -8,6 +8,13 @@
       "when": 1744451553358,
       "tag": "0000_fresh_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1744458359813,
+      "tag": "0001_rainy_boomerang",
+      "breakpoints": true
     }
   ]
 }

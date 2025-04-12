@@ -1,0 +1,1 @@
+ALTER TABLE `DisregardedObservations` RENAME TO `disregarded_observations`;
