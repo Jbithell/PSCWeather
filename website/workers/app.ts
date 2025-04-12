@@ -102,7 +102,6 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
           wind_avg: (data.wind2MinAverage / 1.151).toString(),
           wind_direction: data.windDirection.toString(),
           temperature: data.temperatureC.toString(),
-          rh: data.humidity.toString(),
           datetime: new Date(
             event.payload.timestamp as string | number
           ).toISOString(),
@@ -148,10 +147,8 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
           temp: data.temperatureC.toString(), // real number [°C]; air temperature
           windspeedmph: data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
           winddir: data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
-          windgustmph: data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
-          rh: data.humidity.toString(), // real number [%]; relative humidity ; alternative name: humidity
+          //windgustmph: data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
           dewpoint: data.dewPoint.toString(), // real number [°C];
-          baromin: data.barometer.toString(), // real number [inches Hg]; atmospheric pressure alternative
           rainin: (data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
           uv: data.uv.toString(), //number [index];
         });
@@ -192,15 +189,13 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
             .replace("T", "+")
             .replace(/:/g, "%3A")
             .split(".")[0],
-          baromin: data.barometer.toString(), // real number [inches Hg]; atmospheric pressure alternative
           dailyrainin: (data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
           dewptf: data.dewPoint.toString(),
-          humidity: data.humidity.toString(), // real number [%]; relative humidity ; alternative name: humidity
           tempf: data.temperatureF.toString(), // real number [°F]; air temperature
           windspeedmph: data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
           winddir: data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
-          windgustmph: data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
-          windgustdir: data.windGustDirection.toString(), // integer number [deg]; instantaneous wind direction
+          //windgustmph: data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
+          //windgustdir: data.windGustDirection.toString(), // integer number [deg]; instantaneous wind direction
         });
         await fetch(
           `http://wow.metoffice.gov.uk/automaticreading?${params.toString()}`,
