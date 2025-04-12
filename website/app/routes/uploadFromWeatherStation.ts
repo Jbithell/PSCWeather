@@ -41,16 +41,15 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
     requestBody
   );
   if (!validatedFormData.success) {
-    const errors = validatedFormData.error.flatten();
     console.log(
       "Error in data packet from weather station",
       requestBody,
-      errors
+      validatedFormData.error
     );
     return data(
       {
         error: "Error in data packet from weather station",
-        errors,
+        errors: validatedFormData.error,
       },
       { status: 400 }
     );
@@ -68,13 +67,12 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
   });
   if (!fullValidation.success) {
     // The data is not valid, so we need to return an error
-    const errors = fullValidation.error.flatten();
     const workflowInstance =
       await context.cloudflare.env.WORKFLOW_HANDLE_DISREGARD_OBSERVATION.create(
         {
           params: {
             data: parsedData,
-            errors,
+            errors: fullValidation.error,
           },
         }
       );

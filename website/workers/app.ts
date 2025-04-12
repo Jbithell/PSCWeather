@@ -6,6 +6,7 @@ import {
 import { NonRetryableError } from "cloudflare:workflows";
 import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { createRequestHandler } from "react-router";
+import type { ZodError } from "zod";
 import { scheduledWorker } from "../app/scheduledWorker";
 import { drizzleLogger } from "../database/logger";
 import * as schema from "../database/schema.d";
@@ -220,19 +221,13 @@ export class DisregardReceivedObservation extends WorkflowEntrypoint<
   Env,
   {
     data: schema.ObservationDataFromWeatherStation;
-    errors: {
-      formErrors: string[];
-      fieldErrors: Record<string, string[]>;
-    };
+    errors: ZodError<schema.ObservationDataFromWeatherStation>;
   }
 > {
   async run(
     event: WorkflowEvent<{
       data: schema.ObservationDataFromWeatherStation;
-      errors: {
-        formErrors: string[];
-        fieldErrors: Record<string, string[]>;
-      };
+      errors: ZodError<schema.ObservationDataFromWeatherStation>;
     }>,
     step: WorkflowStep
   ) {
