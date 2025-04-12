@@ -56,19 +56,6 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
     event: WorkflowEvent<schema.ObservationInsert>,
     step: WorkflowStep
   ) {
-    const timestamp = await step.do("Log timestamp", async () => {
-      console.log(
-        "Attempting to log",
-        event.payload,
-        typeof event.payload.timestamp
-      );
-      return {
-        timestamp: typeof event.payload.timestamp,
-        time: event.payload.timestamp,
-        timestampAsDate: new Date(event.payload.timestamp),
-        timestampAsDateType: typeof new Date(event.payload.timestamp),
-      };
-    });
     const upload = await step.do(
       "Upload incoming data into database",
       {
@@ -84,14 +71,15 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           schema,
           logger: drizzleLogger,
         });
-        console.log(
-          "Attempting to insert",
-          event.payload,
-          typeof event.payload.timestamp
+        const payloadData = await schema.observationInsertSchema.safeParseAsync(
+          event.payload
         );
+        if (!payloadData.success)
+          throw new NonRetryableError("Issue with incoming data");
+
         const insert = await db
           .insert(schema.Observations)
-          .values(event.payload)
+          .values(payloadData.data)
           .returning({ insertedId: schema.Observations.id });
         if (!insert[0].insertedId) {
           throw new Error("Failed to insert");
@@ -116,6 +104,12 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
         const WINDGURU_PASSWORD = await this.env.KV.get("WINDGURU_PASSWORD");
         if (!WINDGURU_UID || !WINDGURU_PASSWORD)
           throw new NonRetryableError("Missing Windguru credentials");
+        const payloadData = await schema.observationInsertSchema.safeParseAsync(
+          event.payload
+        );
+        if (!payloadData.success)
+          throw new NonRetryableError("Issue with incoming data");
+        const data = payloadData.data;
 
         const salt = Date.now();
         const hash = await crypto.subtle.digest(
@@ -124,14 +118,13 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           },
           new TextEncoder().encode(`${salt}${WINDGURU_UID}${WINDGURU_PASSWORD}`)
         );
-        const data = event.payload.data as schema.ObservationData;
         const params = new URLSearchParams({
           uid: WINDGURU_UID,
           interval: "120",
-          wind_avg: (data.wind2MinAverage / 1.151).toString(),
-          wind_direction: data.windDirection.toString(),
-          temperature: data.temperatureC.toString(),
-          datetime: event.payload.timestamp.toISOString(),
+          wind_avg: (data.data.wind2MinAverage / 1.151).toString(),
+          wind_direction: data.data.windDirection.toString(),
+          temperature: data.data.temperatureC.toString(),
+          datetime: data.timestamp.toISOString(),
           salt: salt.toString(),
           hash: Array.from(new Uint8Array(hash))
             .map((b) => b.toString(16).padStart(2, "0"))
@@ -164,18 +157,23 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
         const WINDY_STATION_ID = await this.env.KV.get("WINDY_STATION_ID");
         if (!WINDY_API_KEY || !WINDY_STATION_ID)
           throw new NonRetryableError("Missing Windy credentials");
+        const payloadData = await schema.observationInsertSchema.safeParseAsync(
+          event.payload
+        );
+        if (!payloadData.success)
+          throw new NonRetryableError("Issue with incoming data");
+        const data = payloadData.data;
 
-        const data = event.payload.data as schema.ObservationData;
         const params = new URLSearchParams({
           station: WINDY_STATION_ID, // 32 bit integer; required for multiple stations; default value 0; alternative names: si, stationId
-          ts: event.payload.timestamp.getTime().toString(),
-          temp: data.temperatureC.toString(), // real number [°C]; air temperature
-          windspeedmph: data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
-          winddir: data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
-          //windgustmph: data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
-          dewpoint: data.dewPoint.toString(), // real number [°C];
-          rainin: (data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
-          uv: data.uv.toString(), //number [index];
+          ts: data.timestamp.getTime().toString(),
+          temp: data.data.temperatureC.toString(), // real number [°C]; air temperature
+          windspeedmph: data.data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
+          winddir: data.data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
+          //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
+          dewpoint: data.data.dewPoint.toString(), // real number [°C];
+          rainin: (data.data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
+          uv: data.data.uv.toString(), //number [index];
         });
         await fetch(
           `https://stations.windy.com/pws/update/${WINDY_API_KEY}?${params.toString()}`,
@@ -204,23 +202,29 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
         const METOFFICE_AUTH_KEY = await this.env.KV.get("METOFFICE_AUTH_KEY");
         if (!METOFFICE_SITE_ID || !METOFFICE_AUTH_KEY)
           throw new NonRetryableError("Missing Met Office credentials");
-        const data = event.payload.data as schema.ObservationData;
+        const payloadData = await schema.observationInsertSchema.safeParseAsync(
+          event.payload
+        );
+        if (!payloadData.success)
+          throw new NonRetryableError("Issue with incoming data");
+        const data = payloadData.data;
+
         const params = new URLSearchParams({
           siteid: METOFFICE_SITE_ID,
           siteAuthenticationKey: METOFFICE_AUTH_KEY,
           softwaretype: "PSC Weather Station",
-          dateutc: event.payload.timestamp
+          dateutc: data.timestamp
             .toISOString()
             .replace("T", "+")
             .replace(/:/g, "%3A")
             .split(".")[0],
-          dailyrainin: (data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
-          dewptf: data.dewPoint.toString(),
-          tempf: data.temperatureF.toString(), // real number [°F]; air temperature
-          windspeedmph: data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
-          winddir: data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
-          //windgustmph: data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
-          //windgustdir: data.windGustDirection.toString(), // integer number [deg]; instantaneous wind direction
+          dailyrainin: (data.data.rainRate / 0.01).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
+          dewptf: data.data.dewPoint.toString(),
+          tempf: data.data.temperatureF.toString(), // real number [°F]; air temperature
+          windspeedmph: data.data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
+          winddir: data.data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
+          //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
+          //windgustdir: data.data.windGustDirection.toString(), // integer number [deg]; instantaneous wind direction
         });
         await fetch(
           `http://wow.metoffice.gov.uk/automaticreading?${params.toString()}`,

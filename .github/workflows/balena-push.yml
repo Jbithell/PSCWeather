@@ -13,8 +13,16 @@ jobs:
     name: Push to Balena.io
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+      - name: Determine if balena code has changed
+        id: balena-code-changed
+        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0 # v46
+        with:
+          files_ignore: website/**
       - uses: balena-io/deploy-to-balena-action@master
+        if: steps.balena-code-changed.outputs.any_changed == 'true'
         with:
           balena_token: ${{ secrets.BALENA_API_TOKEN }}
           fleet: ${{ secrets.BALENA_APPLICATION_NAME }}
