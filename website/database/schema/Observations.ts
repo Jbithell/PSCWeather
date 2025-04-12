@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const Observations = sqliteTable(
@@ -58,7 +57,7 @@ export type ObservationData = z.infer<typeof observationDataSchema>;
 export type ObservationDataFromWeatherStation = z.infer<
   typeof observationFromWeatherStation
 >;
-export const observationInsertSchema = createInsertSchema(Observations, {
+export const observationInsertSchema = z.object({
   data: observationDataSchema,
   timestamp: z.coerce.date(),
 });

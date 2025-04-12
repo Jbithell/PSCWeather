@@ -48,7 +48,10 @@ export default {
   },
 } satisfies ExportedHandler<Env>;
 
-export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
+export class HandleReceivedObservation extends WorkflowEntrypoint<
+  Env,
+  schema.ObservationInsert
+> {
   async run(
     event: WorkflowEvent<schema.ObservationInsert>,
     step: WorkflowStep
@@ -102,9 +105,7 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
           wind_avg: (data.wind2MinAverage / 1.151).toString(),
           wind_direction: data.windDirection.toString(),
           temperature: data.temperatureC.toString(),
-          datetime: new Date(
-            event.payload.timestamp as string | number
-          ).toISOString(),
+          datetime: event.payload.timestamp.toISOString(),
           salt: salt.toString(),
           hash: Array.from(new Uint8Array(hash))
             .map((b) => b.toString(16).padStart(2, "0"))
@@ -141,9 +142,7 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
         const data = event.payload.data as schema.ObservationData;
         const params = new URLSearchParams({
           station: WINDY_STATION_ID, // 32 bit integer; required for multiple stations; default value 0; alternative names: si, stationId
-          ts: new Date(event.payload.timestamp as string | number)
-            .getTime()
-            .toString(),
+          ts: event.payload.timestamp.getTime().toString(),
           temp: data.temperatureC.toString(), // real number [°C]; air temperature
           windspeedmph: data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
           winddir: data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
@@ -184,7 +183,7 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<Env, Params> {
           siteid: METOFFICE_SITE_ID,
           siteAuthenticationKey: METOFFICE_AUTH_KEY,
           softwaretype: "PSC Weather Station",
-          dateutc: new Date(event.payload.timestamp as string | number)
+          dateutc: event.payload.timestamp
             .toISOString()
             .replace("T", "+")
             .replace(/:/g, "%3A")
