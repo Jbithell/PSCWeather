@@ -146,53 +146,6 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
       }
     );
     await step.do(
-      "Upload to Windy",
-      {
-        retries: {
-          limit: 10,
-          delay: 60000,
-          backoff: "exponential",
-        },
-        timeout: "5 seconds",
-      },
-      async () => {
-        const WINDY_API_KEY = await this.env.KV.get("WINDY_API_KEY");
-        const WINDY_STATION_ID = await this.env.KV.get("WINDY_STATION_ID");
-        if (!WINDY_API_KEY || !WINDY_STATION_ID)
-          throw new NonRetryableError("Missing Windy credentials");
-        const payloadData = await schema.observationInsertSchema.safeParseAsync(
-          event.payload
-        );
-        if (!payloadData.success)
-          throw new NonRetryableError("Issue with incoming data");
-        const data = payloadData.data;
-
-        const params = new URLSearchParams({
-          station: WINDY_STATION_ID, // 32 bit integer; required for multiple stations; default value 0; alternative names: si, stationId
-          ts: data.timestamp.getTime().toString(),
-          temp: data.data.temperatureC.toString(), // real number [°C]; air temperature
-          windspeedmph: data.data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
-          winddir: data.data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
-          //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
-          dewpoint: data.data.dewPoint.toString(), // real number [°C];
-          precip: data.data.lastHourRain.toString(), // real number [mm]; precipitation over the past hour
-        });
-        const response = await fetch(
-          `https://stations.windy.com/pws/update/${WINDY_API_KEY}?${params.toString()}`,
-          {
-            method: "GET",
-          }
-        ).then((response) => {
-          if (!response.ok)
-            throw new Error("Windy upload failed, status: " + response.status);
-          return response.json();
-        });
-        if (!response || typeof response !== "object")
-          throw new Error(`Windy upload failed: ${JSON.stringify(response)}`);
-        return JSON.stringify(response);
-      }
-    );
-    await step.do(
       "Upload to Met Office",
       {
         retries: {
@@ -251,6 +204,62 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
           throw new Error(
             `Met Office upload failed: ${JSON.stringify(response)}`
           );
+      }
+    );
+    await step.do(
+      "Upload to Windy",
+      {
+        retries: {
+          limit: 2,
+          delay: 60000,
+          backoff: "exponential",
+        },
+        timeout: "5 seconds",
+      },
+      async () => {
+        const WINDY_API_KEY = await this.env.KV.get("WINDY_API_KEY");
+        const WINDY_STATION_ID = await this.env.KV.get("WINDY_STATION_ID");
+        if (!WINDY_API_KEY || !WINDY_STATION_ID)
+          throw new NonRetryableError("Missing Windy credentials");
+        const payloadData = await schema.observationInsertSchema.safeParseAsync(
+          event.payload
+        );
+        if (!payloadData.success)
+          throw new NonRetryableError("Issue with incoming data");
+        const data = payloadData.data;
+
+        const params = new URLSearchParams({
+          station: WINDY_STATION_ID, // 32 bit integer; required for multiple stations; default value 0; alternative names: si, stationId
+          ts: data.timestamp.getTime().toString(),
+          temp: data.data.temperatureC.toString(), // real number [°C]; air temperature
+          windspeedmph: data.data.windSpeed.toString(), // real number [mph]; wind speed (alternative to wind)
+          winddir: data.data.windDirection.toString(), // integer number [deg]; instantaneous wind direction
+          //windgustmph: data.data.windGust.toString(), // real number [mph]; current wind gust (alternative to gust)
+          dewpoint: data.data.dewPoint.toString(), // real number [°C];
+          precip: data.data.lastHourRain.toString(), // real number [mm]; precipitation over the past hour
+        });
+        const response = await fetch(
+          `https://stations.windy.com/pws/update/${WINDY_API_KEY}?${params.toString()}`,
+          {
+            method: "GET",
+          }
+        );
+        const responseText = await response.text();
+        if (
+          responseText.length > 0 &&
+          responseText.includes(
+            "Measurement sent too soon, update interval is 5 minutes"
+          )
+        ) {
+          throw new NonRetryableError(
+            "Windy asked for a backoff, skip this observation"
+          );
+        } else if (!response.ok)
+          throw new Error("Windy upload failed, status: " + response.status);
+        const responseJson = JSON.parse(responseText);
+        if (!responseJson || typeof responseJson !== "object")
+          throw new Error(`Windy upload failed: ${JSON.stringify(response)}`);
+        return responseText;
       }
     );
   }
