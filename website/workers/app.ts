@@ -246,11 +246,11 @@ export class DisregardReceivedObservation extends WorkflowEntrypoint<
         .insert(schema.DisregardedObservations)
         .values({
           data,
-          timestamp,
-          disregardReasonFriendly: disregardReason,
+          timestamp: new Date(timestamp),
+          disregardReasonFriendly: disregardReason ?? "Unknown",
           disregardReasonDetailed: JSON.stringify(event.payload.errors),
         })
-        .returning({ insertedId: schema.Observations.id });
+        .returning({ insertedId: schema.DisregardedObservations.id });
       if (!insert[0].insertedId) {
         throw new Error("Failed to insert");
       }
