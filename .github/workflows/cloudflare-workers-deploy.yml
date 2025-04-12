@@ -22,8 +22,6 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm install
-      - name: Set Wrangler environment to production
-        run: echo "CLOUDFLARE_ENV=production" >> $GITHUB_ENV
       - name: Build
         run: npm run build
       - name: Deploy to Cloudflare
