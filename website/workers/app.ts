@@ -189,6 +189,10 @@ export class HandleReceivedObservation extends WorkflowEntrypoint<
             method: "GET",
           }
         ).then((response) => {
+          if (response.status === 429)
+            throw new NonRetryableError(
+              "Met office asked for a backoff, skip this observation"
+            );
           if (!response.ok)
             throw new Error(
               "Met Office upload failed, status: " + response.status
