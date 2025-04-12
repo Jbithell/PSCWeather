@@ -14,6 +14,15 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
       { status: 400 }
     );
   }
+  const requestBody = await request.json();
+  if (!requestBody) {
+    return data(
+      {
+        error: "Invalid request body",
+      },
+      { status: 400 }
+    );
+  }
 
   const uploadSecret = await context.cloudflare.env.KV.get(
     "UPLOAD_FROM_WEATHER_STATION_SECRET"
@@ -29,13 +38,13 @@ export async function action({ request, context, params }: Route.LoaderArgs) {
 
   // First, check this is a valid request from the weather station - don't care if the data is valid or not, just that the structure is correct
   const validatedFormData = await observationFromWeatherStation.safeParseAsync(
-    request.body
+    requestBody
   );
   if (!validatedFormData.success) {
     const errors = validatedFormData.error.flatten();
     console.log(
       "Error in data packet from weather station",
-      request.body,
+      requestBody,
       errors
     );
     return data(
