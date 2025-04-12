@@ -4,10 +4,10 @@ import {
   WorkflowStep,
 } from "cloudflare:workers";
 import { NonRetryableError } from "cloudflare:workflows";
+import { and, gte, lt } from "drizzle-orm";
 import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { createRequestHandler } from "react-router";
 import type { ZodError } from "zod";
-import { scheduledWorker } from "../app/scheduledWorker";
 import { drizzleLogger } from "../database/logger";
 import * as schema from "../database/schema.d";
 
@@ -38,13 +38,12 @@ export default {
     });
   },
   async scheduled(event, env, ctx) {
-    // This is a scheduled event, triggered by a cron schedule. These can be tested locally using the /__scheduled?cron=*+*+*+*+* path
-    const triggerName = event.cron;
-    const db = drizzle(env.DB, {
-      schema,
-      logger: drizzleLogger,
+    const workflowInstance = await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.create({
+      params: {
+        scheduledTime: event.scheduledTime,
+      },
     });
-    ctx.waitUntil(scheduledWorker(event, env, ctx, db, triggerName));
+    await workflowInstance.status();
   },
 } satisfies ExportedHandler<Env>;
 
@@ -279,33 +278,154 @@ export class DisregardReceivedObservation extends WorkflowEntrypoint<
     }>,
     step: WorkflowStep
   ) {
-    await step.do("Upload incoming data into database", async () => {
+    await step.do(
+      "Upload incoming data into database to be disregarded",
+      async () => {
+        const db = drizzle(this.env.DB, {
+          schema,
+          logger: drizzleLogger,
+        });
+        const { timestamp, disregardReason, ...data } = event.payload.data;
+        const insert = await db
+          .insert(schema.DisregardedObservations)
+          .values({
+            data,
+            timestamp: new Date(timestamp),
+            disregardReasonFriendly: disregardReason ?? "Unknown",
+            disregardReasonDetailed: JSON.stringify(event.payload.errors),
+          })
+          .returning({ insertedId: schema.DisregardedObservations.id });
+        if (!insert[0].insertedId) {
+          throw new Error("Failed to insert");
+        }
+        return {
+          databaseRowId: insert[0].insertedId,
+        };
+      }
+    );
+  }
+}
+
+interface OvernightSaveToR2Params {
+  scheduledTime: number;
+}
+export class OvernightSaveToR2 extends WorkflowEntrypoint<
+  Env,
+  OvernightSaveToR2Params
+> {
+  async run(event: WorkflowEvent<OvernightSaveToR2Params>, step: WorkflowStep) {
+    // Can access bindings on `this.env`
+    // Can access params on `event.payload`
+    const calculatedDate = await step.do("Calculate date", async () => {
+      const date = new Date(event.payload.scheduledTime); // This is the time the workflow was scheduled, probably about 2am - so we want to get the data from the previous day
+      const previousDayAtMidnight = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate() - 1,
+        0,
+        0,
+        0,
+        0
+      );
+      const nextDayAtMidnight = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
+      return {
+        previousDayAtMidnight,
+        nextDayAtMidnight,
+      };
+    });
+    await step.do(
+      "Download data, and upload to R2",
+      {
+        retries: {
+          limit: 30,
+          delay: 120000,
+          backoff: "exponential",
+        },
+        timeout: "60 minutes",
+      },
+      async () => {
+        const db = drizzle(this.env.DB, {
+          schema,
+          logger: drizzleLogger,
+        });
+
+        const allObservations = await db
+          .select()
+          .from(schema.Observations)
+          .where(
+            and(
+              gte(
+                schema.Observations.timestamp,
+                calculatedDate.previousDayAtMidnight
+              ),
+              lt(
+                schema.Observations.timestamp,
+                calculatedDate.nextDayAtMidnight
+              )
+            )
+          );
+        const header = Object.keys(schema.Observations).join(",");
+        const csv = [
+          header,
+          ...allObservations.map((observation) =>
+            Object.values(observation)
+              .map((value) => `"${value}"`)
+              .join(",")
+          ),
+        ].join("\n");
+        await this.env.R2_BUCKET.put(
+          `daily-observations/${calculatedDate.previousDayAtMidnight.getFullYear()}-${calculatedDate.previousDayAtMidnight.getMonth()}-${calculatedDate.previousDayAtMidnight.getDate()}.csv`,
+          csv 
+        );
+      }
+    );
+    await step.do("Delete data from live database", async () => {
       const db = drizzle(this.env.DB, {
         schema,
         logger: drizzleLogger,
       });
-      const { timestamp, disregardReason, ...data } = event.payload.data;
-      const insert = await db
-        .insert(schema.DisregardedObservations)
-        .values({
-          data,
-          timestamp: new Date(timestamp),
-          disregardReasonFriendly: disregardReason ?? "Unknown",
-          disregardReasonDetailed: JSON.stringify(event.payload.errors),
-        })
-        .returning({ insertedId: schema.DisregardedObservations.id });
-      if (!insert[0].insertedId) {
-        throw new Error("Failed to insert");
-      }
-      return {
-        databaseRowId: insert[0].insertedId,
-      };
+      await db.batch([
+        db
+          .delete(schema.Observations)
+          .where(
+            and(
+              gte(
+                schema.Observations.timestamp,
+                calculatedDate.previousDayAtMidnight
+              ),
+              lt(
+                schema.Observations.timestamp,
+                calculatedDate.nextDayAtMidnight
+              )
+            )
+          ), // Delete all observations which were uploaded to R2
+        db
+          .delete(schema.DisregardedObservations)
+          .where(
+            and(
+              lt(
+                schema.DisregardedObservations.timestamp,
+                new Date(
+                  calculatedDate.previousDayAtMidnight.getFullYear(),
+                  calculatedDate.previousDayAtMidnight.getMonth(),
+                  calculatedDate.previousDayAtMidnight.getDate() - 30,
+                  0,
+                  0,
+                  0,
+                  0
+                )
+              )
+            )
+          ), // Delete all disregarded observations older than 30 days
+      ]);
     });
-  }
-}
-export class OvernightSaveToR2 extends WorkflowEntrypoint<Env, Params> {
-  async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
-    // Can access bindings on `this.env`
-    // Can access params on `event.payload`
   }
 }
