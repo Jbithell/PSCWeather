@@ -10,6 +10,10 @@ export default [
     "/upload-from-weather-station/:secret",
     "./routes/uploadFromWeatherStation.ts"
   ),
-  route("/download", "./routes/download.tsx"),
-  layout("./routes/layout.tsx", [index("./routes/index.tsx")]),
+  layout("./routes/layout.tsx", [
+    route("/download", "./routes/download.tsx"),
+    route("/download-observation/:file", "./routes/downloadCsv.tsx"),
+    route("/data/:thisCursor?", "./routes/data.tsx"),
+    index("./routes/index.tsx"),
+  ]),
 ] satisfies RouteConfig;

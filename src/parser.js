@@ -13,7 +13,7 @@ const parser = (inputBuffer, offset) => {
     wind10MinAverage: (inputBuffer.readUInt16LE(offset + 18) / 10).toFixed(1), // in MPH - an average of the last 10 minutes
     wind2MinAverage: (inputBuffer.readUInt16LE(offset + 20) / 10).toFixed(1), // in MPH - an average of the last 2 minutes
     windGust: (inputBuffer.readUInt16LE(offset + 22) / 10).toFixed(1), // in MPH - gust of the last 10 minutes
-    windGustDirection: (inputBuffer.readUInt16LE(offset + 24) / 10).toFixed(1), // in MPH - gust of the last 10 minutes
+    windGustDirection: inputBuffer.readUInt16LE(offset + 24).toFixed(1),
     dewPoint: inputBuffer.readInt16LE(offset + 30), // In Degrees F (255 = unavailable)
     humidity: inputBuffer.readUInt8(offset + 33), // in %
     rainRate: (inputBuffer.readUInt16LE(offset + 34) * 0.2).toFixed(1), // in mm

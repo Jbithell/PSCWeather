@@ -3,23 +3,21 @@ import {
   type MantineColorsTuple,
   MantineProvider,
 } from "@mantine/core";
-import { ModalsProvider } from "@mantine/modals";
-import { Notifications } from "@mantine/notifications";
 /**
  * Doing this in a separate file allows us to use the theme in renderToStaticMarkup(
  */
 
 const myColor: MantineColorsTuple = [
-  "#ffe9f0",
-  "#ffd0dd",
-  "#faa0b8",
-  "#f66d90",
-  "#f2426f",
-  "#f1275a",
-  "#f1184f",
-  "#d70841",
-  "#c00038",
-  "#a9002f",
+  "#ffe9e9",
+  "#ffd0d0",
+  "#fd9d9d",
+  "#fc6766",
+  "#fc3b38",
+  "#fc231c",
+  "#fd160e",
+  "#e20a03",
+  "#c90000",
+  "#b00000",
 ];
 
 const theme = createTheme({
@@ -34,9 +32,6 @@ export const MantineProviderWrapper = (props: {
   children: React.ReactNode;
 }) => (
   <MantineProvider theme={theme} defaultColorScheme="auto">
-    <ModalsProvider>
-      <Notifications />
-      {props.children}
-    </ModalsProvider>
+    {props.children}
   </MantineProvider>
 );

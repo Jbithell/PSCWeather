@@ -1,5 +1,4 @@
 import "@mantine/charts/styles.css";
-import "@mantine/code-highlight/styles.css";
 import {
   Button,
   ColorSchemeScript,
@@ -10,8 +9,6 @@ import {
 } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
-import "@mantine/notifications/styles.css";
-import "@mantine/nprogress/styles.css";
 import {
   isRouteErrorResponse,
   Link,

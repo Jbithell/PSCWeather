@@ -20,6 +20,7 @@ export const Observations = sqliteTable(
 
 const observationDataSchema = z.object({
   temperatureF: z.coerce.number().gt(-460).lt(150),
+  temperatureC: z.coerce.number().gt(-273).lt(150),
   windSpeed: z.coerce.number().gte(0).lte(200), // mph
   windDirection: z.coerce.number().gt(0).lte(360),
   wind10MinAverage: z.coerce.number().gte(0).lte(200), // mph
@@ -28,13 +29,12 @@ const observationDataSchema = z.object({
   windGustDirection: z.coerce.number(), //.gt(0).lte(360),
   dewPoint: z.coerce.number().gt(-460).lt(150), // Fahrenheit
   //rainRate: z.coerce.number().positive(), // Clicks per hour (0.2mm or 0.01in)
-  uv: z.coerce.number(), // UV Index
+  //uv: z.coerce.number(), // UV Index - Weather station doesn't really support this properly
   humidity: z.coerce.number().gte(0).lte(100),
   solarRadiation: z.coerce.number(), // watt/meter^2
   last15MinRain: z.coerce.number(), // Clicks per 15 minutes (0.2mm or 0.01in)
   lastHourRain: z.coerce.number(), // Clicks per hour (0.2mm or 0.01in)
   last24HourRain: z.coerce.number(), // Clicks per 24 hours (0.2mm or 0.01in)
-  temperatureC: z.coerce.number().gt(-273).lt(150),
 });
 // A raw weather station observation - which may or may not be valid
 export const observationFromWeatherStation = z.object({
@@ -47,7 +47,7 @@ export const observationFromWeatherStation = z.object({
   windGustDirection: z.coerce.number(),
   dewPoint: z.coerce.number(),
   //rainRate: z.coerce.number(),
-  uv: z.coerce.number(),
+  //uv: z.coerce.number(),
   humidity: z.coerce.number(),
   solarRadiation: z.coerce.number(),
   last15MinRain: z.coerce.number(),

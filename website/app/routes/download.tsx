@@ -1,20 +1,23 @@
-import { Text, Title } from "@mantine/core";
+import { Button, Text, Title } from "@mantine/core";
+import { IconCloudDownload } from "@tabler/icons-react";
+import { href, Link } from "react-router";
 import type { Route } from "./+types/download";
 
-export function meta({}: Route.MetaArgs) {
-  return [{ title: "Download" }];
-}
+export const handle = {
+  title: "Download Daily Observations",
+};
 export async function loader({ context }: Route.LoaderArgs) {
   const s3List = await context.cloudflare.env.R2_BUCKET.list({
     prefix: "daily-observations/",
   });
   return {
     files: s3List.objects.map((object) => ({
-      key: object.key,
-      size: object.size,
+      key: object.key.replace("daily-observations/", ""),
+      size: (object.size / (1024 * 1024)).toFixed(2), // Convert bytes to MB and format to 2 decimal places
     })),
   };
 }
+
 export default function Page({
   loaderData,
 }: Route.ComponentProps & {
@@ -22,11 +25,24 @@ export default function Page({
 }) {
   return (
     <>
-      <Title>Files</Title>
+      <Title order={2}>Download all observations</Title>
       {loaderData.files.map((file) => (
-        <Text key={file.key}>
-          {file.key} - {file.size} bytes
-          <a href={`${file.key}`}>Download</a>
+        <Text key={file.key} my={"xs"}>
+          {file.key} - {file.size}
+          <sub>MB</sub>
+          <Button
+            component={Link}
+            to={href("/download-observation/:file", {
+              file: file.key.replace(/\.csv$/, ""),
+            })}
+            size={"compact-sm"}
+            rightSection={<IconCloudDownload size={16} />}
+            reloadDocument
+            ml={"sm"}
+            variant={"outline"}
+          >
+            Download
+          </Button>
         </Text>
       ))}
     </>
