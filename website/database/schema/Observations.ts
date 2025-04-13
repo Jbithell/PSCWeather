@@ -11,6 +11,9 @@ export const Observations = sqliteTable(
       .notNull()
       .$defaultFn(() => sql`(unixepoch())`), // Time of the observation being put in the database
     data: text({ mode: "json" }).$type<ObservationData>().notNull(),
+    exportedToR2: integer("exported_to_r2", { mode: "boolean" })
+      .default(false)
+      .notNull(),
   },
   (table) => []
 );

@@ -439,7 +439,8 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
       });
       await db.batch([
         db
-          .delete(schema.Observations)
+          .update(schema.Observations)
+          .set({ exportedToR2: true })
           .where(
             and(
               gte(
@@ -451,7 +452,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
                 calculatedDate.nextDayAtMidnight
               )
             )
-          ), // Delete all observations which were uploaded to R2
+          ), // Record observations which were uploaded to R2 as being exported
         db
           .delete(schema.DisregardedObservations)
           .where(
