@@ -4,7 +4,7 @@ import {
   WorkflowStep,
 } from "cloudflare:workers";
 import { NonRetryableError } from "cloudflare:workflows";
-import { and, asc, gte, lt } from "drizzle-orm";
+import { and, asc, eq, gte, lt, sql } from "drizzle-orm";
 import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { createRequestHandler } from "react-router";
 import type { ZodError } from "zod";
@@ -38,12 +38,45 @@ export default {
     });
   },
   async scheduled(event, env, ctx) {
-    const workflowInstance = await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.create({
-      params: {
-        scheduledTime: event.scheduledTime,
-      },
+    const db = drizzle(env.DB, {
+      schema,
+      logger: drizzleLogger,
     });
-    await workflowInstance.status();
+    const date = new Date(event.scheduledTime); // This is the time the workflow was scheduled, probably about 2am - so we want to get the data from the previous day or earlier
+    const todayAtMidnight = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+    // Get all dates which have observations where uploaded to R2 is false
+    const allDates = await db
+      .selectDistinct({
+        day: sql`date(DATETIME(${schema.Observations.timestamp}, 'unixepoch'))`,
+      })
+      .from(schema.Observations)
+      .where(
+        and(
+          lt(schema.Observations.timestamp, todayAtMidnight),
+          eq(schema.Observations.exportedToR2, false)
+        )
+      )
+      .orderBy(asc(sql`date(timestamp)`))
+      .catch((error) => {
+        throw new Error("Failed to get dates", { cause: error });
+      });
+    const days = allDates.map((date) => new Date(date.day as string));
+    for (const day of days) {
+      const workflowInstance = await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.create({
+        params: {
+          dayToProcess: day,
+        },
+      });
+      await workflowInstance.status();
+    }
   },
 } satisfies ExportedHandler<Env>;
 
@@ -344,7 +377,7 @@ export class DisregardReceivedObservation extends WorkflowEntrypoint<
 }
 
 interface OvernightSaveToR2Params {
-  scheduledTime: number;
+  dayToProcess: Date;
 }
 export class OvernightSaveToR2 extends WorkflowEntrypoint<
   Env,
@@ -353,37 +386,12 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
   async run(event: WorkflowEvent<OvernightSaveToR2Params>, step: WorkflowStep) {
     // Can access bindings on `this.env`
     // Can access params on `event.payload`
-    const calculatedDate = await step.do("Calculate date", async () => {
-      const date = new Date(event.payload.scheduledTime); // This is the time the workflow was scheduled, probably about 2am - so we want to get the data from the previous day
-      const previousDayAtMidnight = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate() - 1,
-        0,
-        0,
-        0,
-        0
-      );
-      const nextDayAtMidnight = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        0,
-        0,
-        0,
-        0
-      );
-      return {
-        previousDayAtMidnight,
-        nextDayAtMidnight,
-      };
-    });
-    await step.do(
+    const firstStep = await step.do(
       "Download data, and upload to R2",
       {
         retries: {
           limit: 30,
-          delay: 120000,
+          delay: 5000,
           backoff: "exponential",
         },
         timeout: "60 minutes",
@@ -394,23 +402,40 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           logger: drizzleLogger,
         });
 
+        const startOfPeriod = new Date(
+          event.payload.dayToProcess.getFullYear(),
+          event.payload.dayToProcess.getMonth(),
+          event.payload.dayToProcess.getDate() - 1,
+          0,
+          0,
+          0,
+          0
+        );
+        const endOfPeriod = new Date(
+          event.payload.dayToProcess.getFullYear(),
+          event.payload.dayToProcess.getMonth(),
+          event.payload.dayToProcess.getDate(),
+          0,
+          0,
+          0,
+          0
+        );
+
         const allObservations = await db
           .select()
           .from(schema.Observations)
           .where(
             and(
-              gte(
-                schema.Observations.timestamp,
-                calculatedDate.previousDayAtMidnight
-              ),
-              lt(
-                schema.Observations.timestamp,
-                calculatedDate.nextDayAtMidnight
-              )
+              gte(schema.Observations.timestamp, startOfPeriod),
+              lt(schema.Observations.timestamp, endOfPeriod)
             )
           )
-          .orderBy(asc(schema.Observations.timestamp));
-        if (allObservations.length === 0) return;
+          .orderBy(asc(schema.Observations.timestamp))
+          .catch((error) => {
+            throw new Error("Failed to get observations", { cause: error });
+          });
+        if (allObservations.length === 0)
+          throw new NonRetryableError("No observations found");
         const header = [
           "Timestamp",
           Object.keys(allObservations[0].data).map((key) => `"${key}"`),
@@ -427,51 +452,60 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           ),
         ].join("\n");
         await this.env.R2_BUCKET.put(
-          `daily-observations/${calculatedDate.previousDayAtMidnight.getFullYear()}-${calculatedDate.previousDayAtMidnight.getMonth()}-${calculatedDate.previousDayAtMidnight.getDate()}.csv`,
+          `daily-observations/${startOfPeriod.getFullYear()}-${startOfPeriod.getMonth()}-${startOfPeriod.getDate()}.csv`,
           csv
-        );
+        ).catch((error) => {
+          throw new Error("Failed to upload to R2", { cause: error });
+        });
+        return {
+          startOfPeriod,
+          endOfPeriod,
+        };
       }
     );
-    await step.do("Delete data from live database", async () => {
-      const db = drizzle(this.env.DB, {
-        schema,
-        logger: drizzleLogger,
-      });
-      await db.batch([
-        db
-          .update(schema.Observations)
-          .set({ exportedToR2: true })
-          .where(
-            and(
-              gte(
-                schema.Observations.timestamp,
-                calculatedDate.previousDayAtMidnight
-              ),
-              lt(
-                schema.Observations.timestamp,
-                calculatedDate.nextDayAtMidnight
+    await step.do(
+      "Delete data from live database",
+      {
+        retries: {
+          limit: 30,
+          delay: 5000,
+          backoff: "exponential",
+        },
+        timeout: "60 minutes",
+      },
+      async () => {
+        const db = drizzle(this.env.DB, {
+          schema,
+          logger: drizzleLogger,
+        });
+        await db.batch([
+          db
+            .update(schema.Observations)
+            .set({ exportedToR2: true })
+            .where(
+              and(
+                gte(schema.Observations.timestamp, firstStep.startOfPeriod),
+                lt(schema.Observations.timestamp, firstStep.endOfPeriod)
               )
-            )
-          ), // Record observations which were uploaded to R2 as being exported
-        db
-          .delete(schema.DisregardedObservations)
-          .where(
-            and(
+            ), // Record observations which were uploaded to R2 as being exported
+          db
+            .delete(schema.DisregardedObservations)
+            .where(
               lt(
                 schema.DisregardedObservations.timestamp,
                 new Date(
-                  calculatedDate.previousDayAtMidnight.getFullYear(),
-                  calculatedDate.previousDayAtMidnight.getMonth(),
-                  calculatedDate.previousDayAtMidnight.getDate() - 30,
+                  firstStep.startOfPeriod.getFullYear(),
+                  firstStep.startOfPeriod.getMonth(),
+                  firstStep.startOfPeriod.getDate() - 30,
                   0,
                   0,
                   0,
                   0
                 )
               )
-            )
-          ), // Delete all disregarded observations older than 30 days
-      ]);
-    });
+            ), // Delete all disregarded observations older than 30 days, as we don't need to keep that data indefinitely
+        ]);
+      }
+    );
   }
 }
