@@ -21,7 +21,7 @@ export async function loader({ context }: Route.LoaderArgs) {
         COUNT(*) AS count,
         FLOOR((timestamp - unixepoch()) / (30 * 60)) AS period_index
       FROM disregarded_observations
-      WHERE timestamp >= (unixepoch()-(24 * 60 * 60 * 1000))
+      WHERE timestamp >= (unixepoch()-(24 * 60 * 60))
       GROUP BY period_index
       UNION ALL
       SELECT 
@@ -29,7 +29,7 @@ export async function loader({ context }: Route.LoaderArgs) {
         COUNT(*) AS count,
         FLOOR((timestamp - unixepoch()) / (30 * 60)) AS period_index
       FROM observations
-      WHERE timestamp >= (unixepoch()-(24 * 60 * 60 * 1000))
+      WHERE timestamp >= (unixepoch()-(24 * 60 * 60))
       GROUP BY period_index
     ) AS combined
     GROUP BY period_index
@@ -56,7 +56,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     FROM (
       SELECT timestamp, created_at
       FROM observations
-      WHERE created_at >= (unixepoch()-(1 * 60 * 60 * 1000))
+      WHERE created_at >= (unixepoch()-(1 * 60 * 60))
       ORDER BY timestamp DESC
       LIMIT 5
     ) AS recent_observations;
