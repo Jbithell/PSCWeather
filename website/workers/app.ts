@@ -65,18 +65,18 @@ export default {
         )
       )
       .orderBy(asc(sql`date(timestamp)`))
+      .limit(99) // Limit to 99 days which is the limit of the workflow instances
       .catch((error) => {
         throw new Error("Failed to get dates", { cause: error });
       });
     const days = allDates.map((date) => new Date(date.day as string));
-    for (const day of days) {
-      const workflowInstance = await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.create({
-        params: {
-          dayToProcess: day,
-        },
-      });
-      await workflowInstance.status();
-    }
+    // Create a new batch of 3 Workflow instances, each with its own ID and pass params to the Workflow instances
+    await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.createBatch(
+      days.map((day) => ({
+        params: { dayToProcess: day },
+      }))
+    );
+    console.log(`Created ${days.length} workflow instances`);
   },
 } satisfies ExportedHandler<Env>;
 
