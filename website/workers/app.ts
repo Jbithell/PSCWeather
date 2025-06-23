@@ -65,7 +65,7 @@ export default {
         )
       )
       .orderBy(asc(sql`date(timestamp)`))
-      .limit(99) // Limit to 99 days which is the limit of the workflow instances
+      .limit(100) // Limit to 100 days which is the limit of the number of workflow instances you can create in a batch
       .catch((error) => {
         throw new Error("Failed to get dates", { cause: error });
       });
@@ -386,7 +386,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
   async run(event: WorkflowEvent<OvernightSaveToR2Params>, step: WorkflowStep) {
     // Can access bindings on `this.env`
     // Can access params on `event.payload`
-    const firstStep = await step.do(
+    await step.do(
       "Download data, and upload to R2",
       {
         retries: {
@@ -406,7 +406,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
         const startOfPeriod = new Date(
           dayToProcess.getFullYear(),
           dayToProcess.getMonth(),
-          dayToProcess.getDate() - 1,
+          dayToProcess.getDate(),
           0,
           0,
           0,
@@ -415,7 +415,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
         const endOfPeriod = new Date(
           dayToProcess.getFullYear(),
           dayToProcess.getMonth(),
-          dayToProcess.getDate(),
+          dayToProcess.getDate() + 1,
           0,
           0,
           0,
