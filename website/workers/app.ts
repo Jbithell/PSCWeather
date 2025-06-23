@@ -390,7 +390,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
       "Download data, and upload to R2",
       {
         retries: {
-          limit: 30,
+          limit: 10,
           delay: 5000,
           backoff: "exponential",
         },
@@ -468,7 +468,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
       "Delete data from live database",
       {
         retries: {
-          limit: 30,
+          limit: 10,
           delay: 5000,
           backoff: "exponential",
         },
