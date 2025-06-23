@@ -72,7 +72,7 @@
   },
   "preview_urls": false,
   "triggers": {
-    "crons": ["07 11 * * *"] // every day at 11:07 AM UTC
+    "crons": ["30 2 * * *"] // every day at 2:30 AM UTC
   },
   "version_metadata": {
     "binding": "CF_VERSION_METADATA"
