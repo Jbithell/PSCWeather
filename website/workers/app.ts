@@ -456,7 +456,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
         console.log(`Uploading ${csv.length} bytes to R2`);
         const upload = await this.env.R2_BUCKET.put(
           `daily-observations/${startOfPeriod.getFullYear()}-${String(
-            startOfPeriod.getMonth()
+            startOfPeriod.getMonth() + 1
           ).padStart(2, "0")}-${String(startOfPeriod.getDate()).padStart(
             2,
             "0"
