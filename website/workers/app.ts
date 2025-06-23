@@ -437,6 +437,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           });
         if (allObservations.length === 0)
           throw new NonRetryableError("No observations found");
+        console.log(`Found ${allObservations.length} observations`);
         const header = [
           "Timestamp",
           Object.keys(allObservations[0].data).map((key) => `"${key}"`),
@@ -452,60 +453,62 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
             ].join(",")
           ),
         ].join("\n");
-        await this.env.R2_BUCKET.put(
-          `daily-observations/${startOfPeriod.getFullYear()}-${startOfPeriod.getMonth()}-${startOfPeriod.getDate()}.csv`,
+        console.log(`Uploading ${csv.length} bytes to R2`);
+        const upload = await this.env.R2_BUCKET.put(
+          `daily-observations/${startOfPeriod.getFullYear()}-${String(
+            startOfPeriod.getMonth()
+          ).padStart(2, "0")}-${String(startOfPeriod.getDate()).padStart(
+            2,
+            "0"
+          )}.csv`,
           csv
         ).catch((error) => {
           throw new Error("Failed to upload to R2", { cause: error });
         });
-        return {
-          startOfPeriod,
-          endOfPeriod,
-        };
-      }
-    );
-    await step.do(
-      "Delete data from live database",
-      {
-        retries: {
-          limit: 10,
-          delay: 5000,
-          backoff: "exponential",
-        },
-        timeout: "60 minutes",
-      },
-      async () => {
-        const db = drizzle(this.env.DB, {
-          schema,
-          logger: drizzleLogger,
-        });
-        await db.batch([
-          db
-            .update(schema.Observations)
-            .set({ exportedToR2: true })
-            .where(
-              and(
-                gte(schema.Observations.timestamp, firstStep.startOfPeriod),
-                lt(schema.Observations.timestamp, firstStep.endOfPeriod)
-              )
-            ), // Record observations which were uploaded to R2 as being exported
-          db
-            .delete(schema.DisregardedObservations)
-            .where(
-              lt(
-                schema.DisregardedObservations.timestamp,
-                new Date(
-                  firstStep.startOfPeriod.getFullYear(),
-                  firstStep.startOfPeriod.getMonth(),
-                  firstStep.startOfPeriod.getDate() - 30,
-                  0,
-                  0,
-                  0,
-                  0
+        if (!upload || !upload.uploaded)
+          throw new Error("Failed to upload to R2");
+        console.log(
+          `Uploaded to R2 ${upload.size} bytes, proceeding to update observations`
+        );
+        const [updateObservations, deleteDisregardedObservations] =
+          await db.batch([
+            db
+              .update(schema.Observations)
+              .set({ exportedToR2: true })
+              .where(
+                and(
+                  gte(schema.Observations.timestamp, startOfPeriod),
+                  lt(schema.Observations.timestamp, endOfPeriod)
                 )
-              )
-            ), // Delete all disregarded observations older than 30 days, as we don't need to keep that data indefinitely
-        ]);
+              ), // Record observations which were uploaded to R2 as being exported
+            db
+              .delete(schema.DisregardedObservations)
+              .where(
+                lt(
+                  schema.DisregardedObservations.timestamp,
+                  new Date(
+                    startOfPeriod.getFullYear(),
+                    startOfPeriod.getMonth(),
+                    startOfPeriod.getDate() - 30,
+                    0,
+                    0,
+                    0,
+                    0
+                  )
+                )
+              ), // Delete all disregarded observations older than 30 days, as we don't need to keep that data indefinitely
+          ]);
+        if (updateObservations.error)
+          throw new Error("Failed to update observations", {
+            cause: updateObservations.error,
+          });
+        if (deleteDisregardedObservations.error)
+          throw new Error("Failed to delete disregarded observations", {
+            cause: deleteDisregardedObservations.error,
+          });
+        console.log(
+          `Successfully uploaded to R2 and updated observations. Script complete`
+        );
       }
     );
   }
