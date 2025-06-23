@@ -402,19 +402,20 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           logger: drizzleLogger,
         });
 
+        const dayToProcess = new Date(event.payload.dayToProcess);
         const startOfPeriod = new Date(
-          event.payload.dayToProcess.getFullYear(),
-          event.payload.dayToProcess.getMonth(),
-          event.payload.dayToProcess.getDate() - 1,
+          dayToProcess.getFullYear(),
+          dayToProcess.getMonth(),
+          dayToProcess.getDate() - 1,
           0,
           0,
           0,
           0
         );
         const endOfPeriod = new Date(
-          event.payload.dayToProcess.getFullYear(),
-          event.payload.dayToProcess.getMonth(),
-          event.payload.dayToProcess.getDate(),
+          dayToProcess.getFullYear(),
+          dayToProcess.getMonth(),
+          dayToProcess.getDate(),
           0,
           0,
           0,
