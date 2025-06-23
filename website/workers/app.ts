@@ -136,7 +136,7 @@ export class UploadToWindGuru extends WorkflowEntrypoint<
       "Upload to WindGuru",
       {
         retries: {
-          limit: 10,
+          limit: 2,
           delay: 60000,
           backoff: "exponential",
         },
@@ -203,7 +203,7 @@ export class UploadToMetOffice extends WorkflowEntrypoint<
       "Upload to Met Office",
       {
         retries: {
-          limit: 10,
+          limit: 2,
           delay: 60000,
           backoff: "exponential",
         },
