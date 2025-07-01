@@ -10,12 +10,12 @@ export const handle = {
 };
 export async function loader({ context }: Route.LoaderArgs) {
   const weatherStationHealthQuery = await context.db.all(sql`
-    SELECT
-      FLOOR(unixepoch() + (period_index * 30 * 60)) AS period_time,
-      period_index,
-      SUM(CASE WHEN table_name = 'disregarded_observations' THEN count ELSE 0 END) AS disregarded,
-      SUM(CASE WHEN table_name = 'observations' THEN count ELSE 0 END) AS observed
-    FROM (
+    WITH RECURSIVE time_periods(period_index) AS (
+      SELECT -48 AS period_index
+      UNION ALL
+      SELECT period_index + 1 FROM time_periods WHERE period_index < 0
+    ),
+    data_summary AS (
       SELECT 
         'disregarded_observations' AS table_name,
         COUNT(*) AS count,
@@ -31,9 +31,16 @@ export async function loader({ context }: Route.LoaderArgs) {
       FROM observations
       WHERE timestamp >= (unixepoch()-(24 * 60 * 60))
       GROUP BY period_index
-    ) AS combined
-    GROUP BY period_index
-    ORDER BY period_index;
+    )
+    SELECT
+      FLOOR(unixepoch() + (tp.period_index * 30 * 60)) AS period_time,
+      tp.period_index,
+      COALESCE(SUM(CASE WHEN ds.table_name = 'disregarded_observations' THEN ds.count ELSE 0 END), 0) AS disregarded,
+      COALESCE(SUM(CASE WHEN ds.table_name = 'observations' THEN ds.count ELSE 0 END), 0) AS observed
+    FROM time_periods tp
+    LEFT JOIN data_summary ds ON tp.period_index = ds.period_index
+    GROUP BY tp.period_index
+    ORDER BY tp.period_index;
   `);
   const weatherStationHealthData: {
     time: string;
