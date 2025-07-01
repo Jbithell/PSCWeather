@@ -10,6 +10,7 @@ export default [
     "/upload-from-weather-station/:secret",
     "./routes/uploadFromWeatherStation.ts"
   ),
+  route("/status", "./routes/status.ts"),
   layout("./routes/layout.tsx", [
     route("/download", "./routes/download.tsx"),
     route("/download-observation/:file", "./routes/downloadCsv.tsx"),
