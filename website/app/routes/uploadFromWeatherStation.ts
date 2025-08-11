@@ -5,7 +5,7 @@ import {
 } from "../../database/schema.d";
 import type { Route } from "./+types/uploadFromWeatherStation";
 
-export async function action({ request, context, params }: Route.LoaderArgs) {
+export async function action({ request, context, params }: Route.ActionArgs) {
   if (request.method !== "PUT" || !request.body) {
     return data(
       {

@@ -10,6 +10,10 @@ export default [
     "/upload-from-weather-station/:secret",
     "./routes/uploadFromWeatherStation.ts"
   ),
+  route(
+    "/heartbeat-from-weather-station/:secret",
+    "./routes/heartbeatFromWeatherStation.ts"
+  ),
   route("/status", "./routes/status.ts"),
   layout("./routes/layout.tsx", [
     route("/download", "./routes/download.tsx"),
