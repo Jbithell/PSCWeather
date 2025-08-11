@@ -26,6 +26,7 @@ If debugging on Windows you may need these drivers http://www.ftdichip.com/Drive
 | -------------------- | ----------- |
 | `LOG_LEVEL`          | `silly`     |
 | `CLOUDFLARE_API_URL` | _none_      |
+| `CLOUDFLARE_HEARTBEAT_URL` | _none_      |
 
 ### Device Configuration Variables
 

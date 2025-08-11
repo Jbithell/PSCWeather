@@ -5,6 +5,7 @@ const responseParser = require("./parser");
 const responseValidator = require("./validator");
 const sleep = require("./sleep");
 const cloudflare = require("./targets/cloudflare");
+const cloudflareHeartbeat = require("./targets/cloudflareHeartbeat");
 
 logger.log("info", "Booted - connecting to Serial");
 /**
@@ -37,6 +38,8 @@ function serialWrite(message) {
     });
   });
 }
+
+setInterval(cloudflareHeartbeat, 60000); // Send a heartbeat to Cloudflare every minute
 
 /**
  * Logic to query the serial device
