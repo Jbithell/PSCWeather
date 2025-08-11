@@ -12,18 +12,18 @@
     "db:migrate": "wrangler d1 migrations apply --local DB"
   },
   "dependencies": {
-    "@mantine/charts": "^7.17.1",
-    "@mantine/core": "^7.17.1",
-    "@mantine/dates": "^7.17.1",
-    "@mantine/form": "^7.17.1",
-    "@mantine/hooks": "^7.17.1",
+    "@mantine/charts": "^7.17.8",
+    "@mantine/core": "^7.17.8",
+    "@mantine/dates": "^7.17.8",
+    "@mantine/form": "^7.17.8",
+    "@mantine/hooks": "^7.17.8",
     "@react-router/node": "^7.6.2",
     "@react-router/serve": "^7.6.2",
     "@tabler/icons-react": "^3.26.0",
     "dayjs": "^1.11.13",
-    "drizzle-orm": "~0.44.2",
+    "drizzle-orm": "~0.44.4",
     "drizzle-zod": "^0.7.0",
-    "isbot": "^5.1.17",
+    "isbot": "^5.1.29",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.6.2",
@@ -31,7 +31,7 @@
     "zod-form-data": "^2.0.5"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.7.4",
+    "@cloudflare/vite-plugin": "^1.11.2",
     "@react-router/dev": "^7.6.2",
     "@types/node": "^20",
     "@types/react": "^19.0.1",
@@ -43,7 +43,7 @@
     "typescript": "^5.7.2",
     "vite": "^6.2.1",
     "vite-tsconfig-paths": "^5.1.4",
-    "wrangler": "^4.9.0"
+    "wrangler": "^4.28.1"
   },
   "cspell": {
     "version": "0.2",
