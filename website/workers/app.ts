@@ -7,7 +7,6 @@ import { NonRetryableError } from "cloudflare:workflows";
 import { and, asc, eq, gte, lt, sql } from "drizzle-orm";
 import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { createRequestHandler } from "react-router";
-import type { ZodError } from "zod";
 import { drizzleLogger } from "../database/logger";
 import * as schema from "../database/schema.d";
 
@@ -79,50 +78,6 @@ export default {
     console.log(`Created ${days.length} workflow instances`);
   },
 } satisfies ExportedHandler<Env>;
-
-export class UploadReceivedObservation extends WorkflowEntrypoint<
-  Env,
-  schema.ObservationInsert
-> {
-  async run(
-    event: WorkflowEvent<schema.ObservationInsert>,
-    step: WorkflowStep
-  ) {
-    await step.do(
-      "Upload incoming data into database",
-      {
-        retries: {
-          limit: 30,
-          delay: 5000,
-          backoff: "exponential",
-        },
-        timeout: "2 seconds",
-      },
-      async () => {
-        const db = drizzle(this.env.DB, {
-          schema,
-          logger: drizzleLogger,
-        });
-        const payloadData = await schema.observationInsertSchema.safeParseAsync(
-          event.payload
-        );
-        if (!payloadData.success)
-          throw new NonRetryableError("Issue with incoming data");
-
-        const insert = await db
-          .insert(schema.Observations)
-          .values(payloadData.data)
-          .returning({ insertedId: schema.Observations.id });
-        if (!insert[0].insertedId) {
-          throw new Error("Failed to insert");
-        }
-        return {
-          databaseRowId: insert[0].insertedId,
-        };
-      }
-    );
-  }
-}
 
 export class UploadToWindGuru extends WorkflowEntrypoint<
   Env,
@@ -329,48 +284,6 @@ export class UploadToWindy extends WorkflowEntrypoint<
         if (!responseJson || typeof responseJson !== "object")
           throw new Error(`Windy upload failed: ${JSON.stringify(response)}`);
         return responseText;
-      }
-    );
-  }
-}
-
-export class DisregardReceivedObservation extends WorkflowEntrypoint<
-  Env,
-  {
-    data: schema.ObservationDataFromWeatherStation;
-    errors: ZodError<schema.ObservationDataFromWeatherStation>;
-  }
-> {
-  async run(
-    event: WorkflowEvent<{
-      data: schema.ObservationDataFromWeatherStation;
-      errors: ZodError<schema.ObservationDataFromWeatherStation>;
-    }>,
-    step: WorkflowStep
-  ) {
-    await step.do(
-      "Upload incoming data into database to be disregarded",
-      async () => {
-        const db = drizzle(this.env.DB, {
-          schema,
-          logger: drizzleLogger,
-        });
-        const { timestamp, disregardReason, ...data } = event.payload.data;
-        const insert = await db
-          .insert(schema.DisregardedObservations)
-          .values({
-            data,
-            timestamp: new Date(timestamp),
-            disregardReasonFriendly: disregardReason ?? "Unknown",
-            disregardReasonDetailed: JSON.stringify(event.payload.errors),
-          })
-          .returning({ insertedId: schema.DisregardedObservations.id });
-        if (!insert[0].insertedId) {
-          throw new Error("Failed to insert");
-        }
-        return {
-          databaseRowId: insert[0].insertedId,
-        };
       }
     );
   }

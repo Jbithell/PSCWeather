@@ -1,4 +1,5 @@
 import { data } from "react-router";
+import * as schema from "../../database/schema.d";
 import {
   observationFromWeatherStation,
   observationInsertSchema,
@@ -68,36 +69,37 @@ export async function action({ request, context, params }: Route.ActionArgs) {
   });
   if (!fullValidation.success) {
     // The data is not valid, so we need to return an error
-    const workflowInstance =
-      await context.cloudflare.env.WORKFLOW_HANDLE_DISREGARD_OBSERVATION.create(
-        {
-          params: {
-            data: parsedData,
-            errors: fullValidation.error,
-          },
-        }
-      );
-    const workflowStatus = await workflowInstance.status();
+    context.cloudflare.ctx.waitUntil(
+      context.db.insert(schema.DisregardedObservations).values({
+        data: rest,
+        timestamp: new Date(timestamp),
+        disregardReasonFriendly: disregardReason ?? "Unknown",
+        disregardReasonDetailed: JSON.stringify(fullValidation.error),
+      })
+    );
     return data({
       message: "Observation received, and will be disregarded",
-      status: workflowStatus.status,
     });
   } else {
-    // The data is valid, so we need to insert it into the database
-    await context.cloudflare.env.WORKFLOW_UPLOAD_RECEIVED_OBSERVATION_TO_DB.create(
-      {
-        params: fullValidation.data,
-      }
+    // The data is valid, so we need to insert it into the database, and then upload it to the other services
+    context.cloudflare.ctx.waitUntil(
+      context.db.insert(schema.Observations).values(fullValidation.data)
     );
-    await context.cloudflare.env.WORKFLOW_UPLOAD_TO_METOFFICE.create({
-      params: fullValidation.data,
-    });
-    await context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDGURU.create({
-      params: fullValidation.data,
-    });
-    await context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDY.create({
-      params: fullValidation.data,
-    });
+    context.cloudflare.ctx.waitUntil(
+      context.cloudflare.env.WORKFLOW_UPLOAD_TO_METOFFICE.create({
+        params: fullValidation.data,
+      })
+    );
+    context.cloudflare.ctx.waitUntil(
+      context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDGURU.create({
+        params: fullValidation.data,
+      })
+    );
+    context.cloudflare.ctx.waitUntil(
+      context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDY.create({
+        params: fullValidation.data,
+      })
+    );
     return data({
       message: "Observation received",
     });

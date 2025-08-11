@@ -7,7 +7,8 @@
       "database_name": "pscweather",
       "database_id": "ccfaf6e2-70d5-4d1f-b44e-c2c182e346ea",
       "migrations_table": "migrations",
-      "migrations_dir": "database/migrations"
+      "migrations_dir": "database/migrations",
+      "experimental_remote": false
     }
   ],
   "kv_namespaces": [
@@ -17,16 +18,6 @@
     }
   ],
   "workflows": [
-    {
-      "name": "PSCWeather-UploadReceivedObservationToDB",
-      "binding": "WORKFLOW_UPLOAD_RECEIVED_OBSERVATION_TO_DB",
-      "class_name": "UploadReceivedObservation"
-    },
-    {
-      "name": "PSCWeather-UploadReceivedObservationToDBDisregard",
-      "binding": "WORKFLOW_HANDLE_DISREGARD_OBSERVATION",
-      "class_name": "DisregardReceivedObservation"
-    },
     {
       "name": "PSCWeather-SaveToR2Overnight",
       "binding": "WORKFLOW_OVERNIGHT_SAVE_TO_R2",
