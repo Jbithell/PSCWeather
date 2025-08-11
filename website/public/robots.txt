@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /upload-from-weather-station/
+Disallow: /heartbeat-from-weather-station/
+Disallow: /status
+Disallow: /data/
+Disallow: /download-observation/
