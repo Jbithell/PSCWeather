@@ -1,8 +1,17 @@
 import { BarChart } from "@mantine/charts";
-import { Button, Divider, Group, Text } from "@mantine/core";
-import { IconCloudDownload, IconTableShare } from "@tabler/icons-react";
-import { sql } from "drizzle-orm";
+import { Button, Divider, Group, Paper, Text, ThemeIcon } from "@mantine/core";
+import {
+  IconCircleDashedCheck,
+  IconCircleDashedX,
+  IconCloudDownload,
+  IconHeartBroken,
+  IconTableShare,
+  IconWifi,
+  IconWifiOff,
+} from "@tabler/icons-react";
+import { asc, gt, sql } from "drizzle-orm";
 import { href, Link } from "react-router";
+import * as schema from "../../database/schema.d";
 import type { Route } from "./+types/index";
 
 export const handle = {
@@ -42,21 +51,61 @@ export async function loader({ context }: Route.LoaderArgs) {
     GROUP BY tp.period_index
     ORDER BY tp.period_index;
   `);
+  const heartbeats = await context.db
+    .select()
+    .from(schema.Heartbeats)
+    .where(
+      gt(
+        schema.Heartbeats.hourStartTimestamp,
+        sql`(unixepoch() - 24 * 60 * 60)`
+      )
+    )
+    .orderBy(asc(schema.Heartbeats.hourStartTimestamp));
   const weatherStationHealthData: {
     time: string;
     disregarded: number;
     observed: number;
-  }[] = weatherStationHealthQuery.map((row: any) => {
-    const start = new Date(row.period_time * 1000);
-    return {
-      time: `${start.getHours()}:${start
-        .getMinutes()
-        .toString()
-        .padStart(2, "0")}`,
-      observed: row.observed || 0,
-      disregarded: row.disregarded || 0,
-    };
-  });
+  }[] = weatherStationHealthQuery
+    .filter((row: any) => row.period_index !== -48) // Skip the first period, it is always empty as it contains data from more than 24 hours ago
+    .map((row: any) => {
+      const endOfPeriod = new Date(row.period_time * 1000);
+      const startOfPeriod = new Date(endOfPeriod.getTime() - 30 * 60 * 1000); // Add 30 minutes to start
+      const minutesSinceStartOfPeriod = Math.round(
+        (new Date().getTime() - startOfPeriod.getTime()) / 60000
+      );
+      const heartbeat = heartbeats.find((heartbeat) => {
+        // Match if the weatherStationPeriod's hour matches the heartbeat's hourStartTimestamp
+        return (
+          heartbeat.hourStartTimestamp.getHours() ===
+            startOfPeriod.getHours() &&
+          heartbeat.hourStartTimestamp.getDate() === startOfPeriod.getDate()
+        );
+      });
+
+      let uptime = 0; // Uptime as a percentage (i.e. 100% = 55 pings)
+      let expectedPings = 60; // Expected number of pings in the period, if the period is the current one (ie less than an hour, we should expect fewer pings). This is because it's the previous 30 minutes.
+      if (minutesSinceStartOfPeriod < 60)
+        expectedPings = expectedPings * (minutesSinceStartOfPeriod / 60);
+      if (heartbeat) uptime = (heartbeat.pingCount / expectedPings) * 100;
+      if (uptime > 100) uptime = 100;
+      uptime = Math.round(uptime);
+
+      return {
+        time: `${startOfPeriod.getHours()}:${startOfPeriod
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}`,
+        observed: row.observed || 0,
+        disregarded: row.disregarded || 0,
+        endOfPeriod: `${endOfPeriod.getHours()}:${endOfPeriod
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}`,
+        pingCount: heartbeat?.pingCount ?? 0,
+        uptime,
+        expectedPings,
+      };
+    });
 
   const averageProcessingTimeLastHourQuery = await context.db.get(sql`
     SELECT AVG(created_at - timestamp) AS avg_difference_of_last_5_observations_within_last_hour
@@ -85,6 +134,72 @@ export async function loader({ context }: Route.LoaderArgs) {
 }
 
 export default function Page({ actionData, loaderData }: Route.ComponentProps) {
+  const ChartTooltip = ({
+    label,
+    payload,
+  }: {
+    label: string;
+    payload: Record<string, any>[] | undefined;
+  }) => {
+    if (!payload || payload.length === 0) return null;
+    const payloadData = payload[0]["payload"];
+    const startOfPeriod = new Date(`1970-01-01T${payloadData.time}:00`);
+
+    return (
+      <Paper px="md" py="sm" withBorder shadow="md" radius="md">
+        <Text fw={500} mb={5}>
+          {label} to {payloadData.endOfPeriod} UTC
+        </Text>
+
+        <Group>
+          <ThemeIcon variant="white" color="green.4" radius="md">
+            <IconCircleDashedCheck style={{ width: "70%", height: "70%" }} />
+          </ThemeIcon>
+          <Text fz="sm">
+            {payloadData.observed} observation
+            {payloadData.observed === 1 ? "" : "s"} successfully recorded
+          </Text>
+        </Group>
+        {payloadData.disregarded > 0 && (
+          <Group>
+            <ThemeIcon variant="white" color="red.5" radius="md">
+              <IconCircleDashedX style={{ width: "70%", height: "70%" }} />
+            </ThemeIcon>
+            <Text fz="sm">
+              {payloadData.disregarded} observation
+              {payloadData.disregarded === 1 ? "" : "s"} failed validation check
+            </Text>
+          </Group>
+        )}
+        {payloadData.uptime >= 90 ? (
+          <Group>
+            <ThemeIcon variant="white" color="black" radius="md">
+              <IconWifi style={{ width: "70%", height: "70%" }} />
+            </ThemeIcon>
+            <Text fz="sm">No connectivity issues experienced</Text>
+          </Group>
+        ) : (
+          <>
+            <Group>
+              <ThemeIcon variant="white" color="black" radius="md">
+                <IconWifiOff style={{ width: "70%", height: "70%" }} />
+              </ThemeIcon>
+              <Text fz="sm">Connected {payloadData.uptime}% of the time</Text>
+            </Group>
+            <Group>
+              <ThemeIcon variant="white" color="pink.4" radius="md">
+                <IconHeartBroken style={{ width: "70%", height: "70%" }} />
+              </ThemeIcon>
+              <Text fz="sm">
+                Received {payloadData.pingCount} of {payloadData.expectedPings}{" "}
+                expected heartbeats
+              </Text>
+            </Group>
+          </>
+        )}
+      </Paper>
+    );
+  };
   return (
     <>
       <Text my={"sm"}>
@@ -194,6 +309,11 @@ export default function Page({ actionData, loaderData }: Route.ComponentProps) {
         legendProps={{ verticalAlign: "bottom" }}
         tickLine="none"
         gridAxis="none"
+        tooltipProps={{
+          content: ({ label, payload }) => (
+            <ChartTooltip label={label} payload={payload} />
+          ),
+        }}
         series={[
           {
             name: "observed",
