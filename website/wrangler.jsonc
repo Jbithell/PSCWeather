@@ -8,42 +8,42 @@
       "database_id": "ccfaf6e2-70d5-4d1f-b44e-c2c182e346ea",
       "migrations_table": "migrations",
       "migrations_dir": "database/migrations",
-      "experimental_remote": false
-    }
+      "experimental_remote": false,
+    },
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "1af1b5224b494242aba4b7eecdfb9fb1"
-    }
+      "id": "1af1b5224b494242aba4b7eecdfb9fb1",
+    },
   ],
   "workflows": [
     {
       "name": "PSCWeather-SaveToR2Overnight",
       "binding": "WORKFLOW_OVERNIGHT_SAVE_TO_R2",
-      "class_name": "OvernightSaveToR2"
+      "class_name": "OvernightSaveToR2",
     },
     {
       "name": "PSCWeather-UploadReceivedObservationToWindGuru",
       "binding": "WORKFLOW_UPLOAD_TO_WINDGURU",
-      "class_name": "UploadToWindGuru"
+      "class_name": "UploadToWindGuru",
     },
     {
       "name": "PSCWeather-UploadReceivedObservationToMetOffice",
       "binding": "WORKFLOW_UPLOAD_TO_METOFFICE",
-      "class_name": "UploadToMetOffice"
+      "class_name": "UploadToMetOffice",
     },
     {
       "name": "PSCWeather-UploadReceivedObservationToWindy",
       "binding": "WORKFLOW_UPLOAD_TO_WINDY",
-      "class_name": "UploadToWindy"
-    }
+      "class_name": "UploadToWindy",
+    },
   ],
   "r2_buckets": [
     {
       "binding": "R2_BUCKET",
-      "bucket_name": "pscweather"
-    }
+      "bucket_name": "pscweather",
+    },
   ],
   "vars": {},
   "main": "./workers/app.ts",
@@ -51,21 +51,27 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./build/client/",
-    "run_worker_first": false
+    "run_worker_first": false,
   },
   "upload_source_maps": true,
   "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1,
     "logs": {
-      "invocation_logs": true
-    }
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+    },
   },
   "preview_urls": false,
   "triggers": {
-    "crons": ["30 2 * * *"] // every day at 2:30 AM UTC
+    "crons": ["30 2 * * *"], // every day at 2:30 AM UTC
   },
   "version_metadata": {
-    "binding": "CF_VERSION_METADATA"
-  }
+    "binding": "CF_VERSION_METADATA",
+  },
 }
