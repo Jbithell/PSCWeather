@@ -64,18 +64,32 @@ export default {
         )
       )
       .orderBy(asc(sql`date(timestamp)`))
-      .limit(100) // Limit to 100 days which is the limit of the number of workflow instances you can create in a batch
+      .limit(99) // Limit to 99 days which is the limit of the number of workflow instances you can create in a batch
       .catch((error) => {
         throw new Error("Failed to get dates", { cause: error });
       });
     const days = allDates.map((date) => new Date(date.day as string));
-    // Create a new batch of 3 Workflow instances, each with its own ID and pass params to the Workflow instances
+    // Create a new batch of workflow instances, each with its own ID and pass params to the Workflow instances
     await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.createBatch(
       days.map((day) => ({
+        id: `overnight-save-${day.toISOString().split("T")[0]}`,
         params: { dayToProcess: day },
       }))
     );
     console.log(`Created ${days.length} workflow instances`);
+    const tenDaysAgo = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate() - 10,
+      0,
+      0,
+      0,
+      0
+    );
+    await db
+      .delete(schema.Heartbeats)
+      .where(lt(schema.Heartbeats.hourStartTimestamp, tenDaysAgo));
+    console.log(`Deleted heartbeats older than 10 days`);
   },
 } satisfies ExportedHandler<Env>;
 
