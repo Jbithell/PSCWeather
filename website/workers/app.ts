@@ -70,17 +70,19 @@ export default {
       });
     const days = allDates.map((date) => new Date(date.day as string));
     // Create a new batch of workflow instances, each with its own ID and pass params to the Workflow instances
-    await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.createBatch(
-      days.map((day) => ({
-        id: `overnight-save-${day.toISOString().split("T")[0]}`,
-        params: { dayToProcess: day },
-      })),
-    );
+    if (days.length > 0) {
+      await env.WORKFLOW_OVERNIGHT_SAVE_TO_R2.createBatch(
+        days.map((day) => ({
+          id: `overnight-save-${day.toISOString().split("T")[0]}`,
+          params: { dayToProcess: day },
+        })),
+      );
+    }
     console.log(`Created ${days.length} workflow instances`);
-    const thirtyDaysAgo = new Date(
+    const tenDaysAgo = new Date(
       date.getFullYear(),
       date.getMonth(),
-      date.getDate() - 30,
+      date.getDate() - 10,
       0,
       0,
       0,
@@ -88,12 +90,12 @@ export default {
     );
     await db
       .delete(schema.DisregardedObservations)
-      .where(lt(schema.DisregardedObservations.timestamp, thirtyDaysAgo));
-    console.log(`Deleted disregarded observations older than 30 days`);
+      .where(lt(schema.DisregardedObservations.timestamp, tenDaysAgo));
+    console.log(`Deleted disregarded observations older than 10 days`);
     await db
       .delete(schema.Heartbeats)
-      .where(lt(schema.Heartbeats.hourStartTimestamp, thirtyDaysAgo));
-    console.log(`Deleted heartbeats older than 30 days`);
+      .where(lt(schema.Heartbeats.hourStartTimestamp, tenDaysAgo));
+    console.log(`Deleted heartbeats older than 10 days`);
   },
 } satisfies ExportedHandler<Env>;
 
