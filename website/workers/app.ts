@@ -22,7 +22,7 @@ declare module "react-router" {
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
-  import.meta.env.MODE
+  import.meta.env.MODE,
 );
 
 export default {
@@ -49,7 +49,7 @@ export default {
       0,
       0,
       0,
-      0
+      0,
     );
     // Get all dates which have observations where uploaded to R2 is false
     const allDates = await db
@@ -60,8 +60,8 @@ export default {
       .where(
         and(
           lt(schema.Observations.timestamp, todayAtMidnight),
-          eq(schema.Observations.exportedToR2, false)
-        )
+          eq(schema.Observations.exportedToR2, false),
+        ),
       )
       .orderBy(asc(sql`date(timestamp)`))
       .limit(99) // Limit to 99 days which is the limit of the number of workflow instances you can create in a batch
@@ -74,22 +74,26 @@ export default {
       days.map((day) => ({
         id: `overnight-save-${day.toISOString().split("T")[0]}`,
         params: { dayToProcess: day },
-      }))
+      })),
     );
     console.log(`Created ${days.length} workflow instances`);
-    const tenDaysAgo = new Date(
+    const thirtyDaysAgo = new Date(
       date.getFullYear(),
       date.getMonth(),
-      date.getDate() - 10,
+      date.getDate() - 30,
       0,
       0,
       0,
-      0
+      0,
     );
     await db
+      .delete(schema.DisregardedObservations)
+      .where(lt(schema.DisregardedObservations.timestamp, thirtyDaysAgo));
+    console.log(`Deleted disregarded observations older than 30 days`);
+    await db
       .delete(schema.Heartbeats)
-      .where(lt(schema.Heartbeats.hourStartTimestamp, tenDaysAgo));
-    console.log(`Deleted heartbeats older than 10 days`);
+      .where(lt(schema.Heartbeats.hourStartTimestamp, thirtyDaysAgo));
+    console.log(`Deleted heartbeats older than 30 days`);
   },
 } satisfies ExportedHandler<Env>;
 
@@ -99,7 +103,7 @@ export class UploadToWindGuru extends WorkflowEntrypoint<
 > {
   async run(
     event: WorkflowEvent<schema.ObservationInsert>,
-    step: WorkflowStep
+    step: WorkflowStep,
   ) {
     await step.do(
       "Upload to WindGuru",
@@ -117,7 +121,7 @@ export class UploadToWindGuru extends WorkflowEntrypoint<
         if (!WINDGURU_UID || !WINDGURU_PASSWORD)
           throw new NonRetryableError("Missing Windguru credentials");
         const payloadData = await schema.observationInsertSchema.safeParseAsync(
-          event.payload
+          event.payload,
         );
         if (!payloadData.success)
           throw new NonRetryableError("Issue with incoming data");
@@ -128,7 +132,9 @@ export class UploadToWindGuru extends WorkflowEntrypoint<
           {
             name: "MD5",
           },
-          new TextEncoder().encode(`${salt}${WINDGURU_UID}${WINDGURU_PASSWORD}`)
+          new TextEncoder().encode(
+            `${salt}${WINDGURU_UID}${WINDGURU_PASSWORD}`,
+          ),
         );
         const params = new URLSearchParams({
           uid: WINDGURU_UID,
@@ -146,7 +152,7 @@ export class UploadToWindGuru extends WorkflowEntrypoint<
           `https://www.windguru.cz/upload/api.php?${params.toString()}`,
           {
             method: "GET",
-          }
+          },
         ).then((response) => {
           if (!response.ok)
             throw new Error("Windguru failed, status: " + response.status);
@@ -155,7 +161,7 @@ export class UploadToWindGuru extends WorkflowEntrypoint<
         if (response !== "OK") {
           throw new Error(`Windguru upload failed: ${response}`);
         }
-      }
+      },
     );
   }
 }
@@ -166,7 +172,7 @@ export class UploadToMetOffice extends WorkflowEntrypoint<
 > {
   async run(
     event: WorkflowEvent<schema.ObservationInsert>,
-    step: WorkflowStep
+    step: WorkflowStep,
   ) {
     await step.do(
       "Upload to Met Office",
@@ -184,7 +190,7 @@ export class UploadToMetOffice extends WorkflowEntrypoint<
         if (!METOFFICE_SITE_ID || !METOFFICE_AUTH_KEY)
           throw new NonRetryableError("Missing Met Office credentials");
         const payloadData = await schema.observationInsertSchema.safeParseAsync(
-          event.payload
+          event.payload,
         );
         if (!payloadData.success)
           throw new NonRetryableError("Issue with incoming data");
@@ -211,15 +217,15 @@ export class UploadToMetOffice extends WorkflowEntrypoint<
           `http://wow.metoffice.gov.uk/automaticreading?${params.toString()}`,
           {
             method: "GET",
-          }
+          },
         ).then((response) => {
           if (response.status === 429)
             throw new NonRetryableError(
-              "Met office asked for a backoff, skip this observation"
+              "Met office asked for a backoff, skip this observation",
             );
           if (!response.ok)
             throw new Error(
-              "Met Office upload failed, status: " + response.status
+              "Met Office upload failed, status: " + response.status,
             );
           return response.json();
         });
@@ -229,9 +235,9 @@ export class UploadToMetOffice extends WorkflowEntrypoint<
           Object.keys(response).length !== 0
         )
           throw new Error(
-            `Met Office upload failed: ${JSON.stringify(response)}`
+            `Met Office upload failed: ${JSON.stringify(response)}`,
           );
-      }
+      },
     );
   }
 }
@@ -242,7 +248,7 @@ export class UploadToWindy extends WorkflowEntrypoint<
 > {
   async run(
     event: WorkflowEvent<schema.ObservationInsert>,
-    step: WorkflowStep
+    step: WorkflowStep,
   ) {
     await step.do(
       "Upload to Windy",
@@ -260,7 +266,7 @@ export class UploadToWindy extends WorkflowEntrypoint<
         if (!WINDY_API_KEY || !WINDY_STATION_ID)
           throw new NonRetryableError("Missing Windy credentials");
         const payloadData = await schema.observationInsertSchema.safeParseAsync(
-          event.payload
+          event.payload,
         );
         if (!payloadData.success)
           throw new NonRetryableError("Issue with incoming data");
@@ -280,17 +286,17 @@ export class UploadToWindy extends WorkflowEntrypoint<
           `https://stations.windy.com/pws/update/${WINDY_API_KEY}?${params.toString()}`,
           {
             method: "GET",
-          }
+          },
         );
         const responseText = await response.text();
         if (
           responseText.length > 0 &&
           responseText.includes(
-            "Measurement sent too soon, update interval is 5 minutes"
+            "Measurement sent too soon, update interval is 5 minutes",
           )
         ) {
           throw new NonRetryableError(
-            "Windy asked for a backoff, skip this observation"
+            "Windy asked for a backoff, skip this observation",
           );
         } else if (!response.ok)
           throw new Error("Windy upload failed, status: " + response.status);
@@ -298,7 +304,7 @@ export class UploadToWindy extends WorkflowEntrypoint<
         if (!responseJson || typeof responseJson !== "object")
           throw new Error(`Windy upload failed: ${JSON.stringify(response)}`);
         return responseText;
-      }
+      },
     );
   }
 }
@@ -337,7 +343,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           0,
           0,
           0,
-          0
+          0,
         );
         const endOfPeriod = new Date(
           dayToProcess.getFullYear(),
@@ -346,7 +352,7 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           0,
           0,
           0,
-          0
+          0,
         );
 
         const allObservations = await db
@@ -355,8 +361,8 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
           .where(
             and(
               gte(schema.Observations.timestamp, startOfPeriod),
-              lt(schema.Observations.timestamp, endOfPeriod)
-            )
+              lt(schema.Observations.timestamp, endOfPeriod),
+            ),
           )
           .orderBy(asc(schema.Observations.timestamp))
           .catch((error) => {
@@ -377,66 +383,43 @@ export class OvernightSaveToR2 extends WorkflowEntrypoint<
               Object.values(observation.data)
                 .map((value) => `"${value}"`)
                 .join(","),
-            ].join(",")
+            ].join(","),
           ),
         ].join("\n");
         console.log(`Uploading ${csv.length} bytes to R2`);
         const upload = await this.env.R2_BUCKET.put(
           `daily-observations/${startOfPeriod.getFullYear()}-${String(
-            startOfPeriod.getMonth() + 1
+            startOfPeriod.getMonth() + 1,
           ).padStart(2, "0")}-${String(startOfPeriod.getDate()).padStart(
             2,
-            "0"
+            "0",
           )}.csv`,
-          csv
+          csv,
         ).catch((error) => {
           throw new Error("Failed to upload to R2", { cause: error });
         });
         if (!upload || !upload.uploaded)
           throw new Error("Failed to upload to R2");
         console.log(
-          `Uploaded to R2 ${upload.size} bytes, proceeding to update observations`
+          `Uploaded to R2 ${upload.size} bytes, proceeding to update observations`,
         );
-        const [updateObservations, deleteDisregardedObservations] =
-          await db.batch([
-            db
-              .update(schema.Observations)
-              .set({ exportedToR2: true })
-              .where(
-                and(
-                  gte(schema.Observations.timestamp, startOfPeriod),
-                  lt(schema.Observations.timestamp, endOfPeriod)
-                )
-              ), // Record observations which were uploaded to R2 as being exported
-            db
-              .delete(schema.DisregardedObservations)
-              .where(
-                lt(
-                  schema.DisregardedObservations.timestamp,
-                  new Date(
-                    startOfPeriod.getFullYear(),
-                    startOfPeriod.getMonth(),
-                    startOfPeriod.getDate() - 30,
-                    0,
-                    0,
-                    0,
-                    0
-                  )
-                )
-              ), // Delete all disregarded observations older than 30 days, as we don't need to keep that data indefinitely
-          ]);
+        const updateObservations = await db
+          .update(schema.Observations)
+          .set({ exportedToR2: true })
+          .where(
+            and(
+              gte(schema.Observations.timestamp, startOfPeriod),
+              lt(schema.Observations.timestamp, endOfPeriod),
+            ),
+          );
         if (updateObservations.error)
           throw new Error("Failed to update observations", {
             cause: updateObservations.error,
           });
-        if (deleteDisregardedObservations.error)
-          throw new Error("Failed to delete disregarded observations", {
-            cause: deleteDisregardedObservations.error,
-          });
         console.log(
-          `Successfully uploaded to R2 and updated observations. Script complete`
+          `Successfully uploaded to R2 and updated observations. Script complete`,
         );
-      }
+      },
     );
   }
 }
