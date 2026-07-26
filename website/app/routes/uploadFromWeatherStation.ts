@@ -4,6 +4,7 @@ import {
   observationFromWeatherStation,
   observationInsertSchema,
 } from "../../database/schema.d";
+import { dispatchObservation } from "../../workers/uploads";
 import type { Route } from "./+types/uploadFromWeatherStation";
 
 export async function action({ request, context, params }: Route.ActionArgs) {
@@ -86,19 +87,11 @@ export async function action({ request, context, params }: Route.ActionArgs) {
       context.db.insert(schema.Observations).values(fullValidation.data)
     );
     context.cloudflare.ctx.waitUntil(
-      context.cloudflare.env.WORKFLOW_UPLOAD_TO_METOFFICE.create({
-        params: fullValidation.data,
-      })
-    );
-    context.cloudflare.ctx.waitUntil(
-      context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDGURU.create({
-        params: fullValidation.data,
-      })
-    );
-    context.cloudflare.ctx.waitUntil(
-      context.cloudflare.env.WORKFLOW_UPLOAD_TO_WINDY.create({
-        params: fullValidation.data,
-      })
+      dispatchObservation(
+        context.cloudflare.env,
+        context.db,
+        fullValidation.data
+      )
     );
     return data({
       message: "Observation received",

@@ -22,21 +22,6 @@
       "binding": "WORKFLOW_OVERNIGHT_SAVE_TO_R2",
       "class_name": "OvernightSaveToR2",
     },
-    {
-      "name": "PSCWeather-UploadReceivedObservationToWindGuru",
-      "binding": "WORKFLOW_UPLOAD_TO_WINDGURU",
-      "class_name": "UploadToWindGuru",
-    },
-    {
-      "name": "PSCWeather-UploadReceivedObservationToMetOffice",
-      "binding": "WORKFLOW_UPLOAD_TO_METOFFICE",
-      "class_name": "UploadToMetOffice",
-    },
-    {
-      "name": "PSCWeather-UploadReceivedObservationToWindy",
-      "binding": "WORKFLOW_UPLOAD_TO_WINDY",
-      "class_name": "UploadToWindy",
-    },
   ],
   "r2_buckets": [
     {
