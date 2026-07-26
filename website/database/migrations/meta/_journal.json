@@ -29,6 +29,13 @@
       "when": 1754915033969,
       "tag": "0003_powerful_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1785085307986,
+      "tag": "0004_wealthy_wildside",
+      "breakpoints": true
     }
   ]
 }
