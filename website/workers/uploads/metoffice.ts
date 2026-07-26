@@ -11,11 +11,9 @@ export async function uploadToMetOffice(env: Env, data: ObservationInsert) {
     siteid: METOFFICE_SITE_ID,
     siteAuthenticationKey: METOFFICE_AUTH_KEY,
     softwaretype: "PSC Weather Station",
-    dateutc: data.timestamp
-      .toISOString()
-      .replace("T", "+")
-      .replace(/:/g, "%3A")
-      .split(".")[0],
+    // WOW wants "YYYY-mm-DD HH:mm:ss" - URLSearchParams does the escaping for
+    // us, so this must be the plain unescaped value
+    dateutc: data.timestamp.toISOString().replace("T", " ").split(".")[0],
     dailyrainin: (data.data.lastHourRain * 0.0393701).toString(), // real number [in]; rain inches over the past hour (alternative to precip)
     dewptf: data.data.dewPoint.toString(),
     tempf: data.data.temperatureF.toString(), // real number [°F]; air temperature
