@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { z } from "zod";
 
 export const Observations = sqliteTable(
@@ -15,7 +15,14 @@ export const Observations = sqliteTable(
       .default(false)
       .notNull(),
   },
-  (table) => []
+  (table) => [
+    index("observations_timestamp_idx").on(table.timestamp),
+    index("observations_created_at_idx").on(table.createdAt),
+    // Partial index - most rows are already exported, so this stays small instead of covering the whole table
+    index("observations_pending_export_idx")
+      .on(table.timestamp)
+      .where(sql`${table.exportedToR2} = 0`),
+  ]
 );
 
 const observationDataSchema = z.object({
