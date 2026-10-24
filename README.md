@@ -6,7 +6,7 @@ Live weather station for the Porthmadog Harbour & Estuary, powered by a Davis Va
 
 A Raspberry Pi Zero W running Balena.io connects to the Davis Vantage Pro2 weather station via a USB cable. The intention was that this would be in a microservices style, but in the end it was easier to just run everything in the same script as it helped the Pi Zero cope!
 
-It uploads it to a Cloudflare worker which then serves the data to the website. The worker also sends the data to The Met Office, Windy.com and Windguru.
+It uploads it to a Cloudflare worker which then serves the data to the website. The worker also sends the data to Windy.com and Windguru.
 
 ## Versioning
 

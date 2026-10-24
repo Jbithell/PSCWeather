@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "../../database/schema.d";
 import type { ObservationInsert, UploadTarget } from "../../database/schema.d";
-import { uploadToMetOffice } from "./metoffice";
 import { withRetry } from "./retry";
 import { uploadToWindGuru } from "./windguru";
 import { uploadToWindy } from "./windy";
@@ -24,11 +23,6 @@ const TARGETS: Record<UploadTarget, UploadTargetConfig> = {
     name: "Windguru",
     minimumIntervalMs: 2 * 60 * 1000, // Matches the interval=120 we send in the payload
     upload: uploadToWindGuru,
-  },
-  metoffice: {
-    name: "Met Office",
-    minimumIntervalMs: 5 * 60 * 1000, // WOW guidance for automatic readings, and stops the 429s
-    upload: uploadToMetOffice,
   },
   windy: {
     name: "Windy",
