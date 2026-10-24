@@ -241,23 +241,6 @@ export default function Page({ actionData, loaderData }: Route.ComponentProps) {
         >
           Windy.com
         </Button>
-        <Button
-          variant="outline"
-          component={Link}
-          to="https://wow.metoffice.gov.uk/observations/details/?site_id=5c09b287-9717-f011-a81b-000d3adc591b"
-          target="_blank"
-          rel="noopener noreferrer"
-          size={"lg"}
-          leftSection={
-            <img
-              src="/service-provider-icons/metoffice.png"
-              alt="Windguru"
-              height={20}
-            />
-          }
-        >
-          MetOffice
-        </Button>
       </Group>
       <Text my={"sm"}>
         The weather station (a Davis Vantage Vue) is sheltered in some wind

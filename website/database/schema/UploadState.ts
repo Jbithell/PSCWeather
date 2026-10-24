@@ -18,5 +18,5 @@ export const UploadState = sqliteTable("upload_state", {
   lastError: text("last_error"), // Why the last attempt failed, or null if it succeeded
 });
 
-export const uploadTargets = ["windguru", "metoffice", "windy"] as const;
+export const uploadTargets = ["windguru", "windy"] as const;
 export type UploadTarget = (typeof uploadTargets)[number];
